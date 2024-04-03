@@ -103,6 +103,34 @@ The final score is a summary of the others. The language score is used as a base
 
 At this stage the language score is used partially because of some problems with the language detector.
 
+#### Use example
+
+The document named "example_text.txt" has been analized with this application. It contains a crawled text from HPLT v1.2 that obtained a __score of 4.9__:
+
+`[...] Articles Publishedcomputational photography
+AI Photo Software Is Converging
+Companies are consolidating AI photo tools. What does this mean for you? I explore this move in my latest Smarter Image column.
+By Jeff Carlson on September 1, 2022
+Articles PublishedEditing Photos
+Getting Started with Lightroom in CreativePro Magazine [...]`
+
+This text is considered good in almost all scores. It contains also several big segments:
+| Score  |    Value      |
+|---|---|
+| language_score | 7.8 |
+| url_score | 10.0 |
+| punctuation_score | 10.0 |
+| numbers_score | 4.3 |
+| repeated_score | 9.3 |
+| big_segments | 10.0 |
+| largest_segments | 6.8 |
+
+Values near to 8 are the expected for a good text in the language_score. The largest_segments score is not a negative score, so the 6.8 do not have an unfavourable effect to the final 4.9 score. The problem was in this case because of the poor result in numbers_score, a segment in particular caused this number value:
+
+` [...]April 2022 March 2022 December 2021 November 2021 September 2021 August 2021 June 2021 May 2021 April 2021 February 2021 January 2021 December 2020 November 2020 October 2020 August 2020 July 2020 June 2020 May 2020 April 2020 [...]`
+
+
+
 ## Usage
 
 
