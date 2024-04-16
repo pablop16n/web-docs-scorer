@@ -24,30 +24,42 @@ if( not os.path.exists(output_path)):
     sys.exit(-1)
 
 
-texto = ""
-texto2 = ""
-texto0 = ""
-conteo = 0
-for archivo in os.listdir(input_path):
-    if conteo == 0:
-        texto0 = f"[['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in lista])}];\n"
-        conteo+=1
-    df = pd.read_csv(os.path.join(input_path, archivo))
-    lista = []
+text0 = ""
+text1 = ""
+text2 = ""
+
+is_first = True
+print("Creating HTML view")
+for file in os.listdir(input_path):
+    print(f"File analized: {file}")
+    df = pd.read_csv(os.path.join(input_path, file))
+    data_list = []
     for n in range(101):
         i = n/10
-        datos = df[(df.qualification_score>round(i-0.1, 1))&(df.qualification_score<=i)]
-        language_score = round(datos.language_score.mean(), 1)
-        url_score = round(datos.url_score.mean()-10, 1)
-        bad_chars_score = round(datos.bad_chars_score.mean()-10, 1)
-        numbers_score = round(datos.numbers_score.mean()-10, 1)
-        spam_score = round(datos.spam_score.mean()-10, 1)
-        n_big_segments_score = round(datos.n_big_segments_score.mean(), 1)
-        great_segment_score = round(datos.great_segment_score.mean(), 1)
-        lista.append([i, datos.shape[0], f"cstm({i}, {language_score}, {url_score}, {bad_chars_score}, {numbers_score}, {spam_score}, {n_big_segments_score}, {great_segment_score})"])
-    texto += f"          {'}'} else if (selectedValue === '{archivo.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in lista])}];\n"
-    texto2 += f'<option value="{archivo.split("_")[0]}">{archivo.split("_")[0]}</option>\n'
-texto = texto.replace("'cstm", "cstm").replace("']", "]").replace("nan", "null")
+        data_in_frame = df[(df.qualification_score>round(i-0.1, 1))&(df.qualification_score<=i)]
+        language_score = round(data_in_frame.language_score.mean(), 1)
+        url_score = round(data_in_frame.url_score.mean()/10, 1)
+        punctuation_score = round(data_in_frame.punctuation_score.mean()/10, 1)
+        bad_chars_score = round(data_in_frame.bad_chars_score.mean()/10, 1)
+        numbers_score = round(data_in_frame.numbers_score.mean()/10, 1)
+        repeated_score = round(data_in_frame.repeated_score.mean()/10, 1)
+        n_big_segments_score = round(data_in_frame.n_big_segments_score.mean()/10, 1)
+        great_segment_score = round(data_in_frame.great_segment_score.mean()/10, 1)
+        data_list.append([i, data_in_frame.shape[0], f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {bad_chars_score}, {numbers_score}, {repeated_score}, {n_big_segments_score}, {great_segment_score})"])
+    
+    
+    if is_first:
+        text0 = f"[['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];"
+        text1 += f"if (selectedValue === '{file.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];\n"
+        is_first = False
+
+    else:
+        
+        text1 += f"          {'}'} else if (selectedValue === '{file.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];\n"
+    text2 += f'<option value="{file.split("_")[0]}">{file.split("_")[0]}</option>\n'
+
+text0 = text0.replace("'cstm", "cstm").replace("']", "]").replace("nan", "null")
+text1 = text1.replace("'cstm", "cstm").replace("']", "]").replace("nan", "null")
 
 
 html = """
@@ -63,7 +75,7 @@ html = """
         // Definir los datos iniciales
         var initialData = __DATA0__
 
-        function colorLanguageScore(value, minScore = 0, maxScore = 10,  color1 = '#FF0000', color2 = '#b5ff42') {
+        function colorLanguageScore(value, minScore = 0, maxScore = 1,  color1 = '#FF0000', color2 = '#b5ff42') {
           
           if (value < minScore) {
             value = minScore;
@@ -104,18 +116,19 @@ html = """
             return '#' + hexR + hexG + hexB;
         }
         
-        function cstm(qualificationScore, languageScore, urlgeScore, badCharsScore, numbersScore, spamScore, nBigSegmentsScore, greatSegmentScore) {
+        function cstm(qualificationScore, languageScore, urlgeScore, punctScore, badCharsScore, numbersScore, spamScore, nBigSegmentsScore, greatSegmentScore) {
           return '<div style="padding:5px;">' +
               '<table>' + '<tr>' +
               '<th style="border-bottom: solid 1px; padding-bottom: 5px; text-transform: uppercase;">Scores</th>' + '</tr>' + '<tr>' +
               '<td><b>Qualification score: </b><span>' + qualificationScore + '</span></td>' + '</tr>' + '<tr>' +
               '<td><b>Language score: </b><span class="score">' + languageScore + '<span class="color" style="background-color: ' + colorLanguageScore(languageScore) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>URL score: </b><span class="score">' + urlgeScore + '<span class="color" style="background-color: ' + colorLanguageScore(urlgeScore, -5, 0) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Bad chars score: </b><span class="score">' + badCharsScore + '<span class="color" style="background-color: ' + colorLanguageScore(badCharsScore, -5, 0) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Numbers score: </b><span class="score">' + numbersScore + '<span class="color" style="background-color: ' + colorLanguageScore(numbersScore, -5, 0) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Spam score: </b><span class="score">' + spamScore + '<span class="color" style="background-color: ' + colorLanguageScore(spamScore, -5, 0) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Big segments score: </b><span class="score">' + nBigSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nBigSegmentsScore, 0, 10, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Great segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 10, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '</table>' + '</div>';
+              '<td><b>URL score: </b><span class="score">' + urlgeScore + '<span class="color" style="background-color: ' + colorLanguageScore(urlgeScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Punctuation score: </b><span class="score">' + punctScore + '<span class="color" style="background-color: ' + colorLanguageScore(punctScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Bad chars score: </b><span class="score">' + badCharsScore + '<span class="color" style="background-color: ' + colorLanguageScore(badCharsScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Numbers score: </b><span class="score">' + numbersScore + '<span class="color" style="background-color: ' + colorLanguageScore(numbersScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Spam score: </b><span class="score">' + spamScore + '<span class="color" style="background-color: ' + colorLanguageScore(spamScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Big segments score: </b><span class="score">' + nBigSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nBigSegmentsScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Great segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '</table>' + '</div>';
         }      
         
         
@@ -222,11 +235,11 @@ html = """
 """
 
 
-html = html.replace("__DATA1__", texto)
-html = html.replace("} else if", "if", 1)
-html = html.replace("__DATA2__", texto2)
+html = html.replace("__DATA0__", text0)
+html = html.replace("__DATA1__", text1+"\n}")
+html = html.replace("__DATA2__", text2)
 
-with open(os.path.join(output_path, "qualifier_scores.html")) as archivo:
-    archivo.write(html)
+with open(os.path.join(output_path, "qualifier_scores.html"), "w", encoding="utf8") as file:
+    file.write(html)
 
     
