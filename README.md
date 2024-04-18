@@ -183,6 +183,8 @@ But the main problem comes with the excess of numbers and urls in the moment we 
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
 
+Note: average(other_values) = (0.9+1+1)/3 = 0.97
+
 So the penalty_score will reduce the base (6.5) drastically:
 |(language_score*0.8 + big_segments_score + largest_segments_score) * penalty_score| Result |
 |---|---|
