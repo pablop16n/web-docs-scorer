@@ -1,6 +1,6 @@
 """
 Usage:
-  crawled_text_qualifier.py --input=<dir> --output=<dir>
+  crawled_text_qualifier.py --input=<dir> --output=<dir> --config=<csv>
 
 """
 
@@ -19,7 +19,12 @@ args = docopt.docopt(__doc__, version='printbook v 1.0')
 
 ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________
 
-df_lang_adaptation = pd.read_csv("/mnt/d/Documentos/Prompsit/HPLT/calificador/quality-text-tagger/language_adaptation/medians_language.csv")
+config=args['--config']
+if( not os.path.exists(config)):
+    print(f"File {config} not found")
+    sys.exit(-1)
+
+df_lang_adaptation = pd.read_csv(config)
 df_lang_adaptation.set_index("language", inplace=True)
 LANGUAGES = df_lang_adaptation.index
 
@@ -177,7 +182,9 @@ def valorate_lang(ref_language, lang_segments, scores_lang, word_chars):
 def valorate_urls(ref_language, document, word_chars):
     menu_length = MENUS_AVERAGE_LENGTH[ref_language] if ref_language in MENUS_AVERAGE_LENGTH else MENUS_AVERAGE_LENGTH["standard"]
     n_segments = len([x for x in word_chars if x > menu_length])
-            
+    if n_segments == 0:
+        return 10
+    
     url_quantity = max([document.count("www"), document.count("http")])
     url_quantity = url_quantity/n_segments
     
@@ -206,7 +213,8 @@ def valorate_punctuation(ref_language, punctuation_chars, word_chars):
     percent_desired_max = PUNCTUATION_PERCENT_DESIRED_MAX[ref_language] if ref_language in PUNCTUATION_PERCENT_DESIRED_MAX else PUNCTUATION_PERCENT_DESIRED_MAX["standard"]
     percent_desired_min = PUNCTUATION_PERCENT_DESIRED_MIN[ref_language] if ref_language in PUNCTUATION_PERCENT_DESIRED_MIN else PUNCTUATION_PERCENT_DESIRED_MIN["standard"]
     
-
+    if word_chars == 0:
+        return 0
     ratio = round((punctuation_chars/word_chars)*100, 1)
 
     if ratio >= percent_desired_min and ratio <= percent_desired_max:
@@ -248,6 +256,8 @@ def valorate_bad_chars(ref_language, bad_chars, word_chars):
     percent_bad = BAD_CHARS_PERCENT_BAD[ref_language] if ref_language in BAD_CHARS_PERCENT_BAD else BAD_CHARS_PERCENT_BAD["standard"]
     percent_semibad = BAD_CHARS_PERCENT_SEMIBAD[ref_language] if ref_language in BAD_CHARS_PERCENT_SEMIBAD else BAD_CHARS_PERCENT_SEMIBAD["standard"]
     percent_desired = BAD_CHARS_PERCENT_DESIRED[ref_language] if ref_language in BAD_CHARS_PERCENT_DESIRED else BAD_CHARS_PERCENT_DESIRED["standard"]
+    if word_chars == 0:
+        return 0
 
     ratio = round((bad_chars/word_chars)*100, 1)
 
@@ -282,6 +292,8 @@ def valorate_numbers(ref_language, numbers, word_chars):
     percent_semibad = NUMBERS_PERCENT_SEMIBAD[ref_language] if ref_language in NUMBERS_PERCENT_SEMIBAD else NUMBERS_PERCENT_SEMIBAD["standard"]
     percent_desired = NUMBERS_PERCENT_DESIRED[ref_language] if ref_language in NUMBERS_PERCENT_DESIRED else NUMBERS_PERCENT_DESIRED["standard"]
     
+    if word_chars == 0:
+        return 0
     numbers_ratio = round((numbers/word_chars)*100, 1)
     
     if numbers_ratio <= percent_desired:
@@ -349,7 +361,7 @@ def custom_mean(neg_values):
         neg_values.remove(minor1)
         minor2 = min(neg_values)
         neg_values.remove(minor2)
-        return minor1 * minor2 * sum(neg_values)/len(neg_values)
+        return minor1 * minor2 * (sum(neg_values)/len(neg_values))
 
 def valorate_text(ref_lang, lang_segments, scores_lang, document):
     condensed_data = [(len(re.findall(word_pattern, segment)), len(re.findall(punctuation_pattern, segment)), len(re.findall(bad_chars_pattern, segment)), len(re.findall(numbers_pattern, segment))) for segment in document.split("\n")]
