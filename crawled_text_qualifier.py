@@ -161,7 +161,7 @@ spaces_pattern = join_utf_blocks(SPACES)
 ## _____ VALORATION FUNCTIONS _______________________________________________________________________________________________________________
 def valorate_lang(ref_language, lang_segments, scores_lang, word_chars):
     if len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars):
-        return -1000 #Errors from unmatched scores
+        return 10 #Errors from unmatched scores
     menu_length = MENUS_AVERAGE_LENGTH[ref_language] if ref_language in MENUS_AVERAGE_LENGTH else MENUS_AVERAGE_LENGTH["standard"]
     correct_lang_chars = 0
     wrong_lang_chars = 0
@@ -331,7 +331,8 @@ def valorate_repeated(ref_language, document):
 
 def valorate_big_texts(ref_language, lang_segments, word_chars):
     if len(word_chars) != len(lang_segments):
-        return (-1000, -1000)
+        lang_segments = [ref_language]*len(word_chars)
+        # return (-1000, -1000)
     
     big_text_min = BIG_TEXT_MIN[ref_language] if ref_language in BIG_TEXT_MIN else BIG_TEXT_MIN["standard"]
     big_text_max = BIG_TEXT_MAX[ref_language] if ref_language in BIG_TEXT_MAX else BIG_TEXT_MAX["standard"]
@@ -381,7 +382,7 @@ def valorate_text(ref_lang, lang_segments, scores_lang, document):
         
     
     score = (language_score*0.8 + big_segments_scores[0]/10 + big_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, bad_chars_score/10, numbers_score/10, repeated_score/10])
-    return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(bad_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(big_segments_scores[0], 1), round(big_segments_scores[1], 1), document] #comment document if text is not wanted
+    return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(bad_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(big_segments_scores[0], 1), round(big_segments_scores[1], 1)]#, document] #comment document if text is not wanted
 
 
 
@@ -426,7 +427,7 @@ for json_f in os.listdir(input_path):
         df["repeated_score"] = df.score.apply(lambda x: x[6])
         df["n_big_segments_score"] = df.score.apply(lambda x: x[7])
         df["great_segment_score"] = df.score.apply(lambda x: x[8])
-        df["text"] = df.score.apply(lambda x: x[9]) #comment if text is not wanted
+        # df["text"] = df.score.apply(lambda x: x[9]) #comment if text is not wanted
         df.drop(columns=["score"], inplace=True)
         df.to_csv(writing_path)
         print(f"Saved results in '{writing_path}'")

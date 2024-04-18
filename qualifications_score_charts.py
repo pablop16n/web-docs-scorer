@@ -121,7 +121,7 @@ html = """
               '<table>' + '<tr>' +
               '<th style="border-bottom: solid 1px; padding-bottom: 5px; text-transform: uppercase;">Scores</th>' + '</tr>' + '<tr>' +
               '<td><b>Qualification score: </b><span>' + qualificationScore + '</span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Language score: </b><span class="score">' + languageScore + '<span class="color" style="background-color: ' + colorLanguageScore(languageScore) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Language score: </b><span class="score">' + languageScore + '<span class="color" style="background-color: ' + colorLanguageScore(languageScore, 1, 10) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>URL score: </b><span class="score">' + urlgeScore + '<span class="color" style="background-color: ' + colorLanguageScore(urlgeScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Punctuation score: </b><span class="score">' + punctScore + '<span class="color" style="background-color: ' + colorLanguageScore(punctScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Bad chars score: </b><span class="score">' + badCharsScore + '<span class="color" style="background-color: ' + colorLanguageScore(badCharsScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
