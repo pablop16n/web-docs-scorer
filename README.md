@@ -1,71 +1,152 @@
 # Quality text tagger
 
+## Glossary
+- _document_: whole text of a crawled website
+- _segment_: every string group between `\n` character
+- _x type character_: see next table
 
-## Description
+| Name  |  Meaning   |  utf-8 ranges   |
+|---|---|---|
+|number character|Numbers in many languages|0030-0039, 0660-0669, 06F0-06F9, 0964-096F, 09F2-09F9, 0B66-0B77, 0BE6-0BFA, 0C66-0C6F, 0C78-0C7E, 0CE6-0CEF, 0D66-0D79, 0DE6-0DEF, 0E50-0E5B, 0EC0-0ED9, 1040-1049, 1090-1099, 1369-137C, 17E0-17E9, 1810-1819, 19D0-19DA, 1A80-1A99, 1B50-1B59, 1C40-1C49, 1C50-1C59, A830-A839, A8D0-A8D9, AA50-AA59|
+|punctuation character|Most frequent linguistic punctuation|0021-0022, 0027-0029, 002C-002E, 003A-003B, 003F, 005B, 005D, 0060, 00A1, 00B4-00B5, 00B7, 00BF,0589-05C7, 0600-061F, 066A-066D, 06D4-06ED, 0700-070F, 1360-1368, 1800-180A, 1AB0-1AFF, 1C78-1C7F, 1CC0-1CC7, 1FBD-1FC1, 1FCD-1FCF, 1FDD-1FDF, 1FED-1FEF, 1FFD-2027, 3000-303F, 4DC0-4DFF, A6F0-A6F7, FE10-FE6F|
+|bad character|Non typical linguistic punctuation, emojis, separators, etc.|0023-0026, 002A-002B, 002F, 003C-003E, 0040, 005C, 007C, 007E, 00A2-00B3, 00B8-00BE, 00D7, 00F7, 02B0-0385, 0483-0489, 0559-055F, 2010-2E52, 10000-1FFFF, A670-A67F, 3200-33FF|
+|space character|White spaces, tabulations, new lines, etc.|0000-0020, 007F-00A0, 2B7E, 008A, 0088|
+|word character|Characters that are used to create lexical units or words|Negation of all the previous characters|
+ 
+## General description
 
-Quality text tagger is an application that assigns valoration scores (0-10) to given texts in any language supported by _>>LANGUAGE_DETECTOR<<_. It is specifically adjusted for crawled data in the current stage. The score given by the application is obtained by using several indicators:
+Quality text tagger is an application that assigns valoration scores from 0 to 10 to given documents in any language supported by _>>LANGUAGE_DETECTOR<<_. The scope is to distinguish desired and undesired texts in big corpora crawled from internet websites.  We consider desired documents those that are mainly composed by linguistic data. What we seek is texts with long and well constructed paragraphs. Those that contain non linguistic characters (like code or emojis) or show an excess of numbers (like calendars or pagination) are intended as undesired inputs to the application.
 
-- __unified language probability__ (language_score)
-- ratio of __urls__ (urls_score)
-- ratio of __numbers__ (numbers_score)
-- ratio of __punctuation__ characters (punctuation_score)
-- ratio of __emojis, non word punctuation, separatos, etc.__ characters (bad_chars_score)
-- ratio of __repeated segments__ (repeated_score)
-- presence of __big text segments__ in the target language (big_segments_score)
-- length of __largest text segments__ (largest_segments_score)
+The score given by this tagger (quality_score) is obtained by using several indicators extracted from the text:
 
-The indicators are applied to every text in the input. These indicators have their own score that can be consulted in the final ouput. Each one of them is calculated in a different way and has a particular role in the final score (qualification_score). We use the ratios between, for example, numbers and word characters to asign a score to `numbers_score`. Ratios are manually selected based on crawled texts from HPLT 1.2v.
+| score name  |  based on   |  scale   |
+|---|---|---|
+| language_score | custom mean of language probability | 0 - 10 |
+| big_segments_score | presence of big text segments in the target language | 0 - 1 |
+| largest_segments_score | length of largest text segments | 0 - 1 |
+| urls_score | ratio of urls | 0 - 1 |
+| numbers_score | ratio of number characters | 0 - 1 |
+| punctuation_score | ratio of punctuation characters | 0 - 1 |
+| bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
+| repeated_score | ratio of repeated segments | 0 - 1 |
 
-### Language score (language_score)
+We used the Spanish language as a point of reference, so we manually assign scores to certain numeric aspects of the text, based on the HPLT v1.2 Spanish corpus.
+For example, with respect to the _numbers_score_ we extracted the number of word characters and the quantity of number characters in the text. This was converted in a ratio by dividing the obtained values multiplied by 100: 
 
-It is calculated using the language identification label that _>>LANGUAGE_DETECTOR<<_ gives to every text. Segments whose label is the expected one are considered correct and segments with a different label are considered wrong. We use the alphabetic or word characters to obtain a proportion of correct and incorrect characters from 0 to 10:
+`n_number_characters / n_word_characters * 100`. 
+
+Considering this information, we decided that 1 or less numbers each 100 word characters is a desired ratio. Documents with 10/100 or more ratio showed us worse documents, while more than 30/100 ratio documents used to be undesirable crawled texts. Therefore, we established the following scores to these ratios (from 0 to 1):
+
+| numbers_score (Spanish)  |    Ratio (n_number_characters / n_word_characters * 100)     |
+|---|---|
+| 1 | <1 |
+| 1 → 0.7 | 1 → 10 |
+| 0.7 → 0.5 | 10 → 15 |
+| 0.5 → 0 | 15 → 30 |
+| 0 | >30 |
+
+Some languages use a different amount of characters to create texts, so it is needed to adapt the scores and ratios to every single language. We used, for this purpose, the most common ratios gathered in samples of HPLT v1.2 to flexibilize the scores.
+
+
+
+This is an example of a complete analized text from HPLT v1.2, the whole document can be found in `example/example1.jsonl`:
+
+[...]
+
+_La frase con 把 è usata per rispondere:_
+
+_Dove disporre una persona o una cosa (collocazione spaziale come conseguenza dell’azione)?_
+
+_Come disporre una persona o una cosa (disposizione con la modalità espressa dall’azione come conseguenza)_
+
+_Ti interessa saperne di più? Continua a seguirmi, e fai le tue domande che non credo ..._ 
+
+[...]
+
+|qualification_score|language_score|url_score|punctuation_score|bad_chars_score|
+|---|---|---|---|---|
+|8.2|9.9|1.0|1.0|1.0|
+
+|numbers_score|repeated_score|big_segments_score|great_segment_score|
+|---|---|---|---|
+|0.92|0.96|0.4|1.0|
+
+The meaning of these punctuations is that we have a good text (_qualification_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a well source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
+
+[...] _Gennaio 2022 \n Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
+
+It has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent headers or titles:
+
+[...] _Grammatica, livello avanzato ... Grammatica, livello avanzato_ [...]
+
+It probably contains a considerable amount of linguistic data in one or two segments (_great_segment_score_ = 1/1), but do not seem to be a long text (_big_segments_score_ = 0.4/1).
+
+## Detailed description
+
+### language_score
+
+processed with: `crawled_text_qualifier.valorate_lang()`
+
+The _language_score_ is a value from 0 to 10, that descrives the amount of segments in the correct language. It is calculated using the language identification label that _>>LANGUAGE_DETECTOR<<_ gives to every segment of the text. The language detector also asigns a tag to the complete document, which is considered the main language. Segments whose label agrees with the main language one are considered correct and segments with a different label are intended as wrong. We use the word characters to obtain a proportion of correct and incorrect ones:
 
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
-This score is not sensitive to short segments, which seem to be header or footer menus, listing of social media, collaborator partners, etc. These strings are troublesome for the language detection, they are usually detected as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. _n_ is different according every language, 24 is considered the number for English.
+This score is not sensitive to short segments, which seem to be header or footer menus, listing of social media, collaborator partners, etc. These strings are troublesome for the language detector, because they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language, 25 is considered the minimum number for Spanish.
 
-### Big segments and largest segments (big_segments_score and largest_segments_score)
-These two scores consist in a punctuation from 0 to 1 that aim to determinate the presence of big groups of text in the target language.
+### big_segments_score and largest_segments_score
 
-For the big segment score, a text will recieve a 0.1 score point for every big segment until 1. The estimation of length of a considered big segment is language dependant and it is mesured using only the word character. For example, in English a 232 word characters segment is considered within this score.
+processed with: `crawled_text_qualifier.valorate_big_texts()`
 
-In the other hand, talking about the largest segment score, it is used to mesure the documents that contains almost one very big segment in the target language. The length needed to consider a very big segment is also language dependant. In English we used 464 (or less) and 929 (or more) word characters as a point of reference for our minimum an maximum numbers to adjudicate from 0 to 1. If there are more than one of these segments, we use an average of them.
+These two scores consist in a punctuation from 0 to 1 that aim to determinate the presence of big groups of word characters in the correct language.
 
-### Penalty scores: Urls, numbers, punctuation, bad_chars, repeated segments
-These scores should not be considered as a positive score. They are intended as a penalty punctuation from 0 to 1. The 1 punctuation in any of these indicators means that the text is enought good to not be penalized, less than 0.8 will have an important effect to the final score and less than 0.5 punctuation will penalize severely the qualification of the text.
+For the _big_segments_score_, a document will recieve a 0.1 score point for every big segment, with a maximum of 1. The length of what we considered 'big segment' is language dependant and it is mesured using only the word characters value. In Spanish, we decided that a segment with more than 250 word characters is considered within this score, in English, for example, a higher of 232 value is enough.
 
-#### Urls (urls_score)
-To determinate the number of urls we look for "www" or "http" strings in the whole text. We search the ratio between the number of urls and the number of segments in the text, this ignore short segments, like it is done in `language_score`. The urls_score is language independant and is calculated as follows:
+In the other hand, talking about the _largest_segments_score_, it is used to mesure the documents that contains almost one very big segment in the target language. The length needed to consider a very big segment is also language dependant. In Spanish we used 625 (or less) and 1000 (or more) word characters as a point of reference for our minimum an maximum numbers to adjudicate from 0 to 1. If there are more than one of these segments, we use an average of them.
+
+### Penalty scores: urls_score, numbers, punctuation, bad_chars, repeated segments
+These scores should not be considered as a positive score. They are intended as a penalty punctuation from 0 to 1. The 1 punctuation in any of these indicators means that the text is enough good to not be penalized, less than 0.8 will have an important effect to the final score and less than 0.5 punctuation will penalize severely the qualification of the text. That is because the role of these scores in the final calculation (_qualification_score_) is to be multiplied with a base number. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
+
+
+#### urls_score
+
+processed with: `crawled_text_qualifier.valorate_urls()`
+
+To determinate the number of urls in the document we look for "www" or "http" strings in the whole text. We search the ratio between the number of urls and the number of segments in the text, this ignore short segments, like it is done in _language_score_. The _urls_score_ is language independant and is calculated as follows:
 
 `number_of_urls / number_of_segments * 100`
 
-We selected an admissible and a maximum ratio, 20% or less is not considered punishable (1 score). Higher ratios will be penalized until reaching the maximum (or more) which are consireded a 0 score:
+We agree that documents with 5 or less urls each 100 segments is a enough good ratio, more than 5 must be penalized and 100/100 are usually worthless texts:
 
 | Url score  |    Ratio      |
 |---|---|
-| 1 | <5% |
-| 1 → 0.5 | 5% → 30% |
-| 0.5 → 0 | 30% → 100% |
-| 0 | >100% |
+| 1 | <5 |
+| 1 → 0.5 | 5 → 30 |
+| 0.5 → 0 | 30 → 100 |
+| 0 | >100 |
 
-#### Numbers (numbers_score)
+#### numbers_score
 
-The score of numbers is used to determinate the excess presence of number characters in the text. It is calculated comparing the ratio of numbers and word characters:
+processed with: `crawled_text_qualifier.valorate_numbers()`
 
-`numbers / word_characters * 100`
+The score of numbers is used to determinate the excess presence of number characters in the entire text. It is calculated comparing the ratio of numbers and word characters:
+
+`numbers_characters / word_characters * 100`
 
 The applicated traduction for every ratio is variable depending on the language. For Spanish we assign this scores:
 
 | Number score  |    Ratio      |
 |---|---|
-| 1 | <1% |
-| 1 → 0.7 | 1% → 10% |
-| 0.7 → 0.5 | 10% → 15% |
-| 0.5 → 0 | 15% → 30% |
-| 0 | >30% |
+| 1 | <1 |
+| 1 → 0.7 | 1 → 10 |
+| 0.7 → 0.5 | 10 → 15 |
+| 0.5 → 0 | 15 → 30 |
+| 0 | >30 |
 
-#### Punctuation (punctuation_score)
+#### punctuation_score
+
+processed with: `crawled_text_qualifier.valorate_punctuation()`
+
 This score is used to penalize texts with too much or too little amount of punctuation. The ratio is calculed this way:
 
 `punctuation_characters / word_characters * 100`
@@ -79,19 +160,23 @@ As other scores the proportion considered good or bad is language dependant. In 
 | 1 → 0.7 | 2.5% → 9% |
 | 0.7 → 0.5 | 9% → 13% |
 | 0.5 → 0 | 13% → 25% |
-| 0 | >30.4% |
+| 0 | >25% |
 | __Too few__  | |
 | 0 → 0.5 | 0.9% → 0.5% |
 | 0.5 → 0 | 0.5% → 0.3% |
 | 0 | <0.3% |
 
-#### Emojis, separators, non word punctuation (bad_chars_score)
+Not only too much punctuation is problematic, but also too few is undesired, because it could mean that the text crawled is an enumeration of tags, products, SEO phrases or other linguistically unstructured data.
 
-Bad_chars_score is used to penalize texts with undesireded characters:
+#### bad_chars_score
 
-`numbers / word_characters * 100`
+processed with: `crawled_text_qualifier.valorate_bad_chars()`
 
-The applicated traduction for every ratio is variable depending on the language. For Spanish we assign this scores:
+The _bad_chars_score_ is used to penalize texts with undesireded characters:
+
+`bad_characters / word_characters * 100`
+
+As the previous scores it is variable depending on the language. For Spanish we assign this scores:
 
 | Bad chars score  |    Ratio      |
 |---|---|
@@ -102,43 +187,77 @@ The applicated traduction for every ratio is variable depending on the language.
 | 0 | >10% |
 
 #### Repeated segments (repeated_score)
+
+processed with: `crawled_text_qualifier.valorate_repeated()`
+
 This score uses the proportion of repeated segments. Short segments are ignored using the same logic as the language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score.
 
-#### Penalty score calculation (penalty_score)
-The penalty_score unify the previous scores: url_score, punctuation_score, bad_chars_score, numbers_score and repeated_score. To calculate it the two lowest values are multiplied with the average of the rest of values:
+#### penalty_score
+
+processed with: `crawled_text_qualifier.custom_mean()`
+
+The _penalty_score_ unify the previous scores: _url_score_, _punctuation_score_, _bad_chars_score_, _numbers_score_ and repeated_score. To calculate it the two lowest values are multiplied with the average of the rest of values:
 
 `first_minor_value * second_minor_value * average(other_values)`
 
+We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
 ### Language adaptation of the scores (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
+
+processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
+
 We stablished, first of all, the desidered ratios for each indicator (numbers, punctuation, etc.) in Spanish, using a sample of texts from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
 
-To adapt the scores to particular languages we used the scores provided by the _>>LANGUAGE_DETECTOR<<_ in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the punctuation, bad characters and numbers ratio. We extract the median of these frame of filtered documents with `language_adaptation/extract_ratios.py`, which are saved in `language_adaptation/medians_language.csv`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence. For example, the median of both Russian and Spanish regarding bad chars is the same (0.8), so they will use the logic as we shown in the table of bad chars. The punctuation ratio is somewhat different, 3.2 for Russian and 2.4 in Spanish, that means that the 30.4% ratio of `punctuation/word characters` that we presented as our maximum, equivalent to score -1, must be adapted. We used a cross-multiplication for that: `(3.2*30.4)/2.4 = 40.5%`. The adapted table for Russian in respect to punctuation_score is thus as follows:
+To adapt the values to particular languages we used the scores and the labels provided by the _>>LANGUAGE_DETECTOR<<_ in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the ratio of punctuation, bad characters and numbers. We extracted the median of these frame of filtered documents, which are saved in `language_adaptation/medians_language.csv`, with `language_adaptation/extract_ratios.py`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence of the data.
+
+
+If it is applied the current Spanish ratio-score logic to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
+
+![alt text](example/spanish.png)
+![alt text](example/korean_non_adapted.png)
+
+To solve this problem we decided to use medians as a point of reference for move the scores to more correct ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relationship:
+
+![alt text](example/korean_adapted.png)
+
+
+Using another example, the median of both Russian and Spanish, regarding bad chars, is the same (0.8), so they will use the same logic as we shown in the table of bad chars. The punctuation ratio is somewhat different, 3.2 for Russian and 2.4 in Spanish, that means that the Spanish 0.9 ratio of the _punctuation_score_, that we presented as a perfect scored value (1), is not valid for Russian. The main script uses a cross-multiplication to solve this: 
+
+`(3.2 * 0.9)/2.4 = 1.2`
+
+Consequently, the adapted table for Russian in respect to _punctuation_score_ is as follows:
 
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
-| 1 | 0.9% → 2.5% | 1.2% → 3.3% |
+| 1 | 0.9 → 2.5 | 1.2 → 3.3 |
 | __Too much__  | | |
-| 1 → 0.7 | 2.5% → 9% | 3.3% → 12% |
-| 0.7 → 0.5 | 9% → 13% | 12% → 17.3% |
-| 0.5 → 0 | 13% → 25% | 17.3% → 33.3% |
-| 0 | >30.4% | 40.5% |
+| 1 → 0.7 | 2.5 → 9 | 3.3 → 12 |
+| 0.7 → 0.5 | 9 → 13 | 12 → 17.3 |
+| 0.5 → 0 | 13 → 25 | 17.3 → 33.3 |
+| 0 | >25 | >33.3 |
 | __Too few__  | |
-| 0 → 0.5 | 0.9% → 0.5% | 1.2% → 0.7% |
-| 0.5 → 0 | 0.5% → 0.3% | 0.7% → 0.4% |
-| 0 | <0.3% | <0.4% |
+| 0 → 0.5 | 0.9 → 0.5 | 1.2 → 0.67 |
+| 0.5 → 0 | 0.5 → 0.3 | 0.67 → 0.4 |
+| 0 | <0.3 | <0.4 |
+
+Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. We use the punctuation ratios to transform the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored in somes scores. For example, Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters, in Japanese, with 6.5, 369 characters is enough according to the inverse cross-multiplication:
+
+`2.4 * 1000 / 6.56.5`
+
+The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
+
+### qualification_score
+
+processed with: `crawled_text_qualifier.valorate_text()`
+
+The final score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
+
+`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
+#### Use example of qualification_score
 
-### Qualification score
-The final score is a summary of the others. The language score has an initial weigth of 80% (`language_score*0.8`). The scores about segments length add the missing 20% (`+ big_segments_score + largest_segments_score`). The resulting number is multiplied by a custom mean of the rest of scores, those that we called penalty scores, using the `penalty_score`. The calculation is done this way:
-
-`(language_score*0.8 + big_segments_score + largest_segments_score) * penalty_score`
-
-
-#### Use example
-
-The document named `example/zh_hplt_1_2_952203152.txt` has been analized with this application. It contains a crawled text from HPLT v1.2 that obtained a __score of 1.5__:
+The document named `example/example2.txt` has been analized with this application. It contains a crawled text in Chinese from HPLT v1.2 that obtained a __score of 1.5__:
 
 [...]
  
@@ -157,7 +276,7 @@ www.34449com-www,67617,com
 
 [...]
 
-This text is considered good in some scores. Language, punctuation and bad chars are as expected and there is no repeated segments:
+This text is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments:
 | Score  |    Value      |
 |---|---|
 | language_score | 8.0 |
@@ -169,7 +288,7 @@ This text is considered good in some scores. Language, punctuation and bad chars
 | big_segments_score | 0.1 |
 | largest_segments_score | 0.0 |
 
-The length scores are empty and the language score is not perfect. That makes the calculation start poorly:
+The length scores are empty and the language score is not perfect, this makes the calculation start poorly:
 
 
 |(language_score*0.8 + big_segments_score + largest_segments_score)| Result |
@@ -200,14 +319,14 @@ Parameters
 
 Output
 - will create one csv for each jsonl file.
-- columns: ...
+- columns: qualification_score, language_score, url_score, punctuation_score, bad_chars_score, numbers_score, repeated_score,n_big_segments_score, great_segment_score
 
 Requisites
 
-- document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py`
-- libraries ...
+- document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` with samples of data
 
 #### qualifications_score_charts.py
+
 Parameters 
 - **--input** directory with csv files created by `crawled_text_qualifier.py`
 - **--output:** existing directory

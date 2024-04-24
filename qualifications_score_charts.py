@@ -37,14 +37,14 @@ for file in os.listdir(input_path):
     for n in range(101):
         i = n/10
         data_in_frame = df[(df.qualification_score>round(i-0.1, 1))&(df.qualification_score<=i)]
-        language_score = round(data_in_frame.language_score.mean(), 1)
-        url_score = round(data_in_frame.url_score.mean()/10, 1)
-        punctuation_score = round(data_in_frame.punctuation_score.mean()/10, 1)
-        bad_chars_score = round(data_in_frame.bad_chars_score.mean()/10, 1)
-        numbers_score = round(data_in_frame.numbers_score.mean()/10, 1)
-        repeated_score = round(data_in_frame.repeated_score.mean()/10, 1)
-        n_big_segments_score = round(data_in_frame.n_big_segments_score.mean()/10, 1)
-        great_segment_score = round(data_in_frame.great_segment_score.mean()/10, 1)
+        language_score = round(data_in_frame.language_score.mean(), 2)
+        url_score = round(data_in_frame.url_score.mean()/10, 2)
+        punctuation_score = round(data_in_frame.punctuation_score.mean()/10, 2)
+        bad_chars_score = round(data_in_frame.bad_chars_score.mean()/10, 2)
+        numbers_score = round(data_in_frame.numbers_score.mean()/10, 2)
+        repeated_score = round(data_in_frame.repeated_score.mean()/10, 2)
+        n_big_segments_score = round(data_in_frame.n_big_segments_score.mean()/10, 2)
+        great_segment_score = round(data_in_frame.great_segment_score.mean()/10, 2)
         data_list.append([i, data_in_frame.shape[0], f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {bad_chars_score}, {numbers_score}, {repeated_score}, {n_big_segments_score}, {great_segment_score})"])
     
     
