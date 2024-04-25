@@ -17,11 +17,11 @@ Quality text tagger is an application that assigns scores on a 10-point scale to
  
 ## How does the tagger work
 
-The final score given by this tagger (quality_score) to each document is obtained from several subscores extracted from their text:
+The final score given by this tagger (quality_score) to each document is obtained from several subscores computed over the document text for the following indicators:
 
-| subscore name  |  based on   |  scale   |
+| indicators  |  based on   |  subscore scale   |
 |---|---|---|
-| language_score | custom mean of language probability | 0 - 10 |
+| language_score | mean of language probability (segments vs documents) | 0 - 10 |
 | big_segments_score | presence of big text segments in the target language | 0 - 1 |
 | largest_segments_score | length of largest text segments | 0 - 1 |
 | urls_score | ratio of urls | 0 - 1 |
@@ -30,26 +30,9 @@ The final score given by this tagger (quality_score) to each document is obtaine
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
 | repeated_score | ratio of repeated segments | 0 - 1 |
 
-We used the Spanish language as a point of reference, so we manually assign scores to certain numeric aspects of the text, based on the HPLT v1.2 Spanish corpus.
-For example, with respect to the _numbers_score_ we extracted the number of word characters and the quantity of number characters in the text. This was converted in a ratio by dividing the obtained values multiplied by 100: 
+A detailed description of how we compute these scores is given below in ## Detailed description. To understand how do we compute the final document score from these subscores, we provide an example: 
 
-`n_number_characters / n_word_characters * 100`. 
-
-Considering this information, we decided that 1 or less numbers each 100 word characters is a desired ratio. Documents with 10/100 or more ratio showed us worse documents, while more than 30/100 ratio documents used to be undesirable crawled texts. Therefore, we established the following scores to these ratios (from 0 to 1):
-
-| numbers_score (Spanish)  |    Ratio (n_number_characters / n_word_characters * 100)     |
-|---|---|
-| 1 | <1 |
-| 1 → 0.7 | 1 → 10 |
-| 0.7 → 0.5 | 10 → 15 |
-| 0.5 → 0 | 15 → 30 |
-| 0 | >30 |
-
-Some languages use a different amount of characters to create texts, so it is needed to adapt the scores and ratios to every single language. We used, for this purpose, the most common ratios gathered in samples of HPLT v1.2 to flexibilize the scores.
-
-
-
-This is an example of a complete analized text from HPLT v1.2, the whole document can be found in `example/example1.jsonl`:
+This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
 
 [...]
 
@@ -62,6 +45,8 @@ _Come disporre una persona o una cosa (disposizione con la modalità espressa da
 _Ti interessa saperne di più? Continua a seguirmi, e fai le tue domande che non credo ..._ 
 
 [...]
+
+From the whole document, we get these scores: 
 
 |qualification_score|language_score|url_score|punctuation_score|bad_chars_score|
 |---|---|---|---|---|
@@ -92,7 +77,7 @@ The _language_score_ is a value from 0 to 10, that descrives the amount of segme
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
-This score is not sensitive to short segments, which seem to be header or footer menus, listing of social media, collaborator partners, etc. These strings are troublesome for the language detector, because they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language, 25 is considered the minimum number for Spanish.
+This score is not sensitive to short segments, which seem to be header or footer menus, listing of social media, collaborator partners, etc. These strings are troublesome for the language detector, because they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number for Spanish.
 
 ### big_segments_score and largest_segments_score
 
