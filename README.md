@@ -34,17 +34,17 @@ A detailed description of how we compute these subscores is given below in secti
 
 These subscores will be used to compute a final **quality_score** as follows: 
 
-We depart from an initial number where the `_language_score_` has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is `_big_segments_score_` and `_largest_segments_score_`: 
+We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_: 
 
  `language_score * 0.8 + big_segments_score + largest_segments_score`
 
-Then, we use the rest of the subscores to compute a `_penalty_score_` using the the following formula: 
+Then, we use the rest of the subscores to compute a **_penalty_score_** using the the following formula: 
 
 `penalty_score` = `first_minor_value * second_minor_value * average (remaining_values) `
 
-We get the final **`quality_score`** by multipliying the initial number by the penalty score: 
+We get the final **`quality_score`** by multipliying the initial number by the _penalty_score_: 
 
-`**quality_score**` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score``
+`quality_score` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
 To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
