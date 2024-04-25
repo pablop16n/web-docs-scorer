@@ -34,21 +34,20 @@ A detailed description of how we compute these subscores is given below in secti
 
 These subscores will be used to compute a final **quality_score** as follows: 
 
-We depart from an **initial number** where the `_language_score_` has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is `_big_segments_score_` and `_largest_segments_score_`: 
+We depart from an initial number where the `_language_score_` has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is `_big_segments_score_` and `_largest_segments_score_`: 
 
-`(language_score * 0.8 + big_segments_score + largest_segments_score)`
+ `language_score * 0.8 + big_segments_score + largest_segments_score`
 
 Then, we use the rest of the subscores to compute a `_penalty_score_` using the the following formula: 
 
-`penalty_score` = `first_minor_value * second_minor_value * average(remaining_values) `
+`penalty_score` = `first_minor_value * second_minor_value * average (remaining_values) `
 
 We get the final **`quality_score`** by multipliying the initial number by the penalty score: 
 
 `**quality_score**` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score``
 
-## What does the quality score means
 
-To understand the meaning of the **quality_score**, we provide an example: 
+To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
 
 This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
 
@@ -77,12 +76,12 @@ From the whole document, we get these subscores:
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
-And the final score computed as above explained:  
+The document final `quality score` is computed using these subscore values as above explained:  
 
 (9.9 x 0.8 + 0.4 + 1) x (0.92 x 0.96 x ((1+1+1)/3)) = 8.2 
 
 
-The meaning of the final scores and subscores is that we have a good text (_final_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a good source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
+The meaning of the qualtiy scores and subscores is that we have a good text (_final_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a good source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
 
 [...] _Gennaio 2022 \n Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
