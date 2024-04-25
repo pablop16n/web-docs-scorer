@@ -30,7 +30,7 @@ The quality tagger provides a score to a document (**quality_score**) which is o
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
 | repeated_score | ratio of repeated segments | 0 - 1 |
 
-A detailed description of how we compute these subscores is given below in section [Detailed description](urlhttps://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description). 
+A detailed description of how we compute these subscores is given below in section [Detailed description](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description-of-how-each-subscore-is-computed). 
 
 These subscores will be used to compute a final **quality_score** as follows: 
 
