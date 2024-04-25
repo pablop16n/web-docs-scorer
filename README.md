@@ -152,9 +152,33 @@ So the penalty_score will reduce the base (6.5) drastically:
 | 6.5 * 0.24| 1.5 |
 
 
+## Usage
+
+#### crawled_text_qualifier.py (main script)
+
+Parameters 
+- **--input** directory with jsonl files provided by _>>LANGUAGE_DETECTOR<<_
+- **--output:** existing directory
+
+Output
+- will create one csv for each jsonl file.
+- columns: quality_score, language_score, url_score, punctuation_score, bad_chars_score, numbers_score, repeated_score,n_big_segments_score, great_segment_score
+
+Requisites
+
+- document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` with samples of data
+
+#### quality_score_charts.py
+
+Parameters 
+- **--input** directory with csv files created by `crawled_text_qualifier.py`
+- **--output:** existing directory
+
+Output
+- HTML document with histograms about all languages present in the input
 
 
-## Detailed description of how subscores are computed
+## Detailed description of how each subscore is computed
 
 ### language_score
 
@@ -275,7 +299,8 @@ The _penalty_score_ unify the previous scores: _url_score_, _punctuation_score_,
 
 We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
-### Adaptating scores to different languages (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
+
+## Adaptating scores to different languages (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
 
 processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
 
@@ -284,7 +309,7 @@ We stablished, first of all, the desidered ratios for each indicator (numbers, p
 To adapt the values to particular languages we used the scores and the labels provided by the _>>LANGUAGE_DETECTOR<<_ in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the ratio of punctuation, bad characters and numbers. We extracted the median of these frame of filtered documents, which are saved in `language_adaptation/medians_language.csv`, with `language_adaptation/extract_ratios.py`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence of the data.
 
 
-If it is applied the current Spanish ratio-score logic to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
+If the Spanish ratio-score logic are applied to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
@@ -318,42 +343,6 @@ Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_
 `2.4 * 1000 / 6.56.5`
 
 The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
-
-### qualification_score
-
-processed with: `crawled_text_qualifier.valorate_text()`
-
-The final score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
-
-`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
-
-
-
-
-## Usage
-
-#### crawled_text_qualifier.py (main script)
-
-Parameters 
-- **--input** directory with jsonl files provided by _>>LANGUAGE_DETECTOR<<_
-- **--output:** existing directory
-
-Output
-- will create one csv for each jsonl file.
-- columns: qualification_score, language_score, url_score, punctuation_score, bad_chars_score, numbers_score, repeated_score,n_big_segments_score, great_segment_score
-
-Requisites
-
-- document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` with samples of data
-
-#### qualifications_score_charts.py
-
-Parameters 
-- **--input** directory with csv files created by `crawled_text_qualifier.py`
-- **--output:** existing directory
-
-Output
-- HTML document with histograms about all languages present in the input
 
 
 
