@@ -17,9 +17,9 @@ Quality text tagger is an application that assigns scores on a 10-point scale to
  
 ## How does the tagger work
 
-The quality tagger provides a score to a document (quality_score) which is obtained from several subscores computed over the contents of the document for the following indicators:
+The quality tagger provides a score to a document (**quality_score**) which is obtained from several subscores computed over the contents of the document for the following indicators:
 
-| indicators  |  based on   |  subscore scale   |
+| Subscore  |  Based on   |  Scale   |
 |---|---|---|
 | language_score | mean of language probability (segments vs documents) | 0 - 10 |
 | big_segments_score | presence of big text segments in content | 0 - 1 |
@@ -32,7 +32,7 @@ The quality tagger provides a score to a document (quality_score) which is obtai
 
 A detailed description of how we compute these subscores is given below in section ## Detailed description. 
 
-These subscores will be used to compute a **final score** as follows: 
+These subscores will be used to compute a final **quality_score** as follows: 
 
 We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_. We use the rest of the subscores to compute a _penalty_score_ using the the following formula: 
 
@@ -40,10 +40,11 @@ penalty_score = first_minor_value * second_minor_value * average(remaining_value
 
 which we multiply by the initial number to get the final score: 
 
-final_score = (language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
+**quality_score** = (language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
+## What does the quality score means
 
-To understand the meaning of the final score, we provide an example: 
+To understand the meaning of the **quality_score**, we provide an example: 
 
 This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
 
@@ -61,8 +62,7 @@ _Ti interessa saperne di più? Continua a seguirmi, e fai le tue domande che non
 
 From the whole document, we get these subscores: 
 
-
-| Score  |    Value      |
+| Subcores  |    Value      |
 |---|---|
 | language_score | 9.9 |
 | big_segments_score | 0.4 |
