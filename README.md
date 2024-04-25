@@ -47,6 +47,9 @@ We get the final **`quality_score`** by multipliying the initial number by the *
 `quality_score` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
+Please, see sections [Computing the quality_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description-of-how-each-subscore-is-computed) and [Computing the penalty_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description-of-how-each-subscore-is-computed) for more details. 
+
+
 ### An example of the quality_score
 
 To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
