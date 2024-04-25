@@ -47,6 +47,8 @@ We get the final **`quality_score`** by multipliying the initial number by the *
 `quality_score` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
+### An example
+
 To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
 
 This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
