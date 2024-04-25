@@ -15,7 +15,7 @@
  
 ## General description
 
-Quality text tagger is an application that assigns valoration scores from 0 to 10 to given documents in any language supported by _>>LANGUAGE_DETECTOR<<_. The scope is to distinguish desired and undesired texts in big corpora crawled from internet websites.  We consider desired documents those that are mainly composed by linguistic data. What we seek is texts with long and well constructed paragraphs. Those that contain non linguistic characters (like code or emojis) or show an excess of numbers (like calendars or pagination) are intended as undesired inputs to the application.
+Quality text tagger is an application that assigns valoration scores from 0 to 10 to given documents in any language supported by a particular automatic language identifier. The goal is to distinguish among desirable and undesirable documents in big corpora crawled from internet websites.  We consider desirable documents those that are mainly composed by linguistic data. What we seek is texts with long and well constructed paragraphs. Those documents made of mainly non-linguistic characters (like code or emojis) or show an excess of numbers or puctuation (like calendars or pagination) are deemed undesirable for our purposes, that is, for training language models.
 
 The score given by this tagger (quality_score) is obtained by using several indicators extracted from the text:
 
