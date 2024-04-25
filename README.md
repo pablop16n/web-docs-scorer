@@ -316,16 +316,19 @@ This score uses the proportion of repeated segments. Short segments are ignored 
 
 
 
-## Adaptating subscores to different languages (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
+## Adaptating subscores to different languages 
 
 processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
 
-We stablished, first of all, the desidered ratios for each indicator (numbers, punctuation, etc.) in Spanish, using a sample of texts from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
+Some of the subscores used to get the quality_score are based on ratios that need to be computed for each language for optimal performance. These are: punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments'.
+
+
+In our experiments, , as a first approach, we stablished the desidered ratios for each indicator (numbers, punctuation, etc.) in Spanish, using a sample of texts from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
 
 To adapt the values to particular languages we used the scores and the labels provided by the _>>LANGUAGE_DETECTOR<<_ in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the ratio of punctuation, bad characters and numbers. We extracted the median of these frame of filtered documents, which are saved in `language_adaptation/medians_language.csv`, with `language_adaptation/extract_ratios.py`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence of the data.
 
 
-If the Spanish ratio-score logic are applied to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
+If the Spanish ratios-score logic is applied to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
