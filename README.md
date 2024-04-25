@@ -47,7 +47,7 @@ We get the final **`quality_score`** by multipliying the initial number by the *
 `quality_score` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
-### An example
+### An example or the quality_score
 
 To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
 
@@ -94,7 +94,67 @@ And it has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent head
 
 It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but does not seem to be a long text (_big_segments_score_ = 0.4/1).
 
-## Detailed description
+
+### Another example of the quality_score
+
+The document named `example/example2.txt` has been analized with this application. It contains a crawled text in Chinese from HPLT v1.2 that obtained a **quality_score** of 1.5:
+
+> [...]
+>  
+> www.34449com-www,67617,com  
+> 
+> 首页 | 认证专区 | 论坛 | 博客 | 人才 | 频道 | 名人堂 | 自测 | 文库 | 沙龙  
+> 
+> 博客首页往日推荐排 行 榜博客文集专题荟萃专  家认证专区  
+> 
+> 8686123白小姐9999911111香港曾半仙www.66575.com472222刘伯
+> 温开奖www,df011,comwww993997.com
+> 
+> 全部分类
+> 
+> 数据库
+> 
+> [...]
+
+
+We compute the subscores: 
+
+| Score  |    Value      |
+|---|---|
+| language_score | 8.0 |
+| big_segments_score | 0.1 |
+| largest_segments_score | 0.0 |
+| url_score | 0.44 |
+| punctuation_score | 0.9 |
+| bad_chars_score | 1 |
+| numbers_score | 0.56 |
+| repeated_score | 1 |
+
+This text is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments. 
+
+However, the big_segments_score is very low and the language score is not very good. This makes the initial calculation start poorly:
+
+
+|(language_score*0.8 + big_segments_score + largest_segments_score)| Result |
+|---|---|
+|8 * 0.8 + 0.1 + 0| 6.5 |
+
+
+But the main problem comes with the excess of numbers and urls in the moment we add the penalty_score:
+
+|first_minor_value * second_minor_value * average(other_values)| Result |
+|---|---|
+|0.44 * 0.56 * 0.97| 0.24 |
+
+So the penalty_score will reduce the base (6.5) drastically:
+|(language_score*0.8 + big_segments_score + largest_segments_score) * penalty_score| Result |
+|---|---|
+| 6.5 * 0.24| 1.5 |
+
+
+
+
+## Detailed description of how subscores are computed
 
 ### language_score
 
@@ -199,13 +259,13 @@ As the previous scores it is variable depending on the language. For Spanish we 
 | 0.5 → 0 | 6% → 10% |
 | 0 | >10% |
 
-#### Repeated segments (repeated_score)
+#### repeated segments (repeated_score)
 
 processed with: `crawled_text_qualifier.valorate_repeated()`
 
 This score uses the proportion of repeated segments. Short segments are ignored using the same logic as the language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score.
 
-#### penalty_score
+#### Computing the penalty_score
 
 processed with: `crawled_text_qualifier.custom_mean()`
 
@@ -215,7 +275,7 @@ The _penalty_score_ unify the previous scores: _url_score_, _punctuation_score_,
 
 We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
-### Language adaptation of the scores (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
+### Adaptating scores to different languages (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
 
 processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
 
@@ -267,58 +327,6 @@ The final score is a summary of the others. The _language_score_ has an initial 
 
 `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
-
-#### Use example of qualification_score
-
-The document named `example/example2.txt` has been analized with this application. It contains a crawled text in Chinese from HPLT v1.2 that obtained a __score of 1.5__:
-
-[...]
- 
-www.34449com-www,67617,com  
-
-首页 | 认证专区 | 论坛 | 博客 | 人才 | 频道 | 名人堂 | 自测 | 文库 | 沙龙  
-
-博客首页往日推荐排 行 榜博客文集专题荟萃专  家认证专区  
-
-8686123白小姐9999911111香港曾半仙www.66575.com472222刘伯
-温开奖www,df011,comwww993997.com
-
-全部分类
-
-数据库
-
-[...]
-
-This text is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments:
-| Score  |    Value      |
-|---|---|
-| language_score | 8.0 |
-| url_score | 0.44 |
-| punctuation_score | 0.9 |
-| bad_chars_score | 1 |
-| numbers_score | 0.56 |
-| repeated_score | 1 |
-| big_segments_score | 0.1 |
-| largest_segments_score | 0.0 |
-
-The length scores are empty and the language score is not perfect, this makes the calculation start poorly:
-
-
-|(language_score*0.8 + big_segments_score + largest_segments_score)| Result |
-|---|---|
-|8 * 0.8 + 0.1 + 0| 6.5 |
-
-
-But the main problem comes with the excess of numbers and urls in the moment we add the penalty_score:
-
-|first_minor_value * second_minor_value * average(other_values)| Result |
-|---|---|
-|0.44 * 0.56 * 0.97| 0.24 |
-
-So the penalty_score will reduce the base (6.5) drastically:
-|(language_score*0.8 + big_segments_score + largest_segments_score) * penalty_score| Result |
-|---|---|
-| 6.5 * 0.24| 1.5 |
 
 
 
