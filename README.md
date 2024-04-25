@@ -201,11 +201,10 @@ For the _big_segments_score_, a document will recieve a 0.1 score point for ever
 
 In the other hand, talking about the _largest_segments_score_, it is used to mesure the documents that contains almost one very big segment in the target language. The length needed to consider a very big segment is also language dependant. In Spanish we used 625 (or less) and 1000 (or more) word characters as a point of reference for our minimum an maximum numbers to adjudicate from 0 to 1. If there are more than one of these segments, we use an average of them.
 
-### Penalty scores: urls_score, numbers, punctuation, bad_chars, repeated segments
-These scores should not be considered as a positive score. They are intended as a penalty punctuation from 0 to 1. The 1 punctuation in any of these indicators means that the text is enough good to not be penalized, less than 0.8 will have an important effect to the final score and less than 0.5 punctuation will penalize severely the qualification of the text. That is because the role of these scores in the final calculation (_qualification_score_) is to be multiplied with a base number. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
 
 
-#### urls_score
+
+### urls_score
 
 processed with: `crawled_text_qualifier.valorate_urls()`
 
@@ -222,7 +221,7 @@ We agree that documents with 5 or less urls each 100 segments is a enough good r
 | 0.5 → 0 | 30 → 100 |
 | 0 | >100 |
 
-#### numbers_score
+### numbers_score
 
 processed with: `crawled_text_qualifier.valorate_numbers()`
 
@@ -240,7 +239,7 @@ The applicated traduction for every ratio is variable depending on the language.
 | 0.5 → 0 | 15 → 30 |
 | 0 | >30 |
 
-#### punctuation_score
+### punctuation_score
 
 processed with: `crawled_text_qualifier.valorate_punctuation()`
 
@@ -283,21 +282,12 @@ As the previous scores it is variable depending on the language. For Spanish we 
 | 0.5 → 0 | 6% → 10% |
 | 0 | >10% |
 
-#### repeated segments (repeated_score)
+### repeated segments (repeated_score)
 
 processed with: `crawled_text_qualifier.valorate_repeated()`
 
 This score uses the proportion of repeated segments. Short segments are ignored using the same logic as the language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score.
 
-#### Computing the penalty_score
-
-processed with: `crawled_text_qualifier.custom_mean()`
-
-The _penalty_score_ unify the previous scores: _url_score_, _punctuation_score_, _bad_chars_score_, _numbers_score_ and repeated_score. To calculate it the two lowest values are multiplied with the average of the rest of values:
-
-`first_minor_value * second_minor_value * average(other_values)`
-
-We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
 
 ## Adaptating scores to different languages (punctuation_score, bad_chars_score, numbers_score, big_segments_score, largest_segments_score and 'short segments')
@@ -344,6 +334,32 @@ Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_
 
 The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
 
+
+
+
+
+
+## Computing the penalty_score
+
+The subscores used to compute the **penalty_score* are: urls_score, numbers, punctuation, bad_chars and repeated segments
+
+These subscores are considered negative scores. They range on a scale from 0 to 1. A score of 1 in any of these indicators means that the text is good enough to not be penalized but less than 0.8 will have an important effect in the final score and less than 0.5 will penalize it severely. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
+
+processed with: `crawled_text_qualifier.custom_mean()`
+
+The _penalty_score_ unify the following scores: _url_score_, _punctuation_score_, _bad_chars_score_, _numbers_score_ and repeated_score. To calculate it the two lowest values are multiplied by the average of the rest of values:
+
+`first_minor_value * second_minor_value * average(other_values)`
+
+We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
+
+## Computing the quality_score
+
+processed with: `crawled_text_qualifier.valorate_text()`
+
+The final score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
+
+`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
 ## Future improvements
