@@ -17,9 +17,9 @@ Quality text tagger is an application that assigns scores on a 10-point scale to
  
 ## How does the tagger work
 
-The score given by this tagger (quality_score) to each document is obtained by using several indicators extracted from their text:
+The final score given by this tagger (quality_score) to each document is obtained from several subscores extracted from their text:
 
-| score name  |  based on   |  scale   |
+| subscore name  |  based on   |  scale   |
 |---|---|---|
 | language_score | custom mean of language probability | 0 - 10 |
 | big_segments_score | presence of big text segments in the target language | 0 - 1 |
