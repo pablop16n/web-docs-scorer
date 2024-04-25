@@ -30,17 +30,17 @@ The quality tagger provides a score to a document (quality_score) which is obtai
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
 | repeated_score | ratio of repeated segments | 0 - 1 |
 
+A detailed description of how we compute these subscores is given below in section ## Detailed description. 
 
-A detailed description of how we compute these subscores is given below in ## Detailed description. 
+These subscores will be used to compute a **final score** as follows: 
 
-These will be used to compute a final score, which is a summary of the others, and is computed as follows: 
+We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_. We use the rest of the subscores to compute a _penalty_score_ using the the following formula: 
 
-We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_. The resulting number is then multiplied by the rest of subscores used gathered in what we consider a _penalty_score_. The penalty score multiplies the rest of scores as follows.
+penalty_score = first_minor_value * second_minor_value * average(remaining_values) 
 
+which we multiply by the initial number to get the final score: 
 
-The final socre is then done this way:
-
-`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
+final_score = (language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 
 To understand the meaning of the final score, we provide an example: 
@@ -73,20 +73,20 @@ From the whole document, we get these subscores:
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
-And the final score computed as above explained is 8.2.  
+And the final score computed as above explained:  
 
-((9.9x0.8)+ 0.4+ 1 ) x (0.92 x 0.96x ((1+1+1)/3)) = 8.2. 
+(9.9 x 0.8 + 0.4 + 1) x (0.92 x 0.96 x ((1+1+1)/3)) = 8.2 
 
 
-The meaning of these punctuations is that we have a good text (_qualification_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a well source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
+The meaning of the final scores and subscores is that we have a good text (_final_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a good source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
 
 [...] _Gennaio 2022 \n Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
-It has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent headers or titles:
+And it has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent headers or titles:
 
 [...] _Grammatica, livello avanzato ... Grammatica, livello avanzato_ [...]
 
-It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but do not seem to be a long text (_big_segments_score_ = 0.4/1).
+It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but does not seem to be a long text (_big_segments_score_ = 0.4/1).
 
 ## Detailed description
 
