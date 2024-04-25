@@ -17,12 +17,12 @@ Quality text tagger is an application that assigns scores on a 10-point scale to
  
 ## How does the tagger work
 
-The final score given by this tagger (quality_score) to each document is obtained from several subscores computed over the document text for the following indicators:
+The quality tagger provides a score to a document (quality_score) which is obtained from several subscores computed over the contents of the document for the following indicators:
 
 | indicators  |  based on   |  subscore scale   |
 |---|---|---|
 | language_score | mean of language probability (segments vs documents) | 0 - 10 |
-| big_segments_score | presence of big text segments in the target language | 0 - 1 |
+| big_segments_score | presence of big text segments in content | 0 - 1 |
 | largest_segments_score | length of largest text segments | 0 - 1 |
 | urls_score | ratio of urls | 0 - 1 |
 | numbers_score | ratio of number characters | 0 - 1 |
@@ -30,7 +30,20 @@ The final score given by this tagger (quality_score) to each document is obtaine
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
 | repeated_score | ratio of repeated segments | 0 - 1 |
 
-A detailed description of how we compute these scores is given below in ## Detailed description. To understand how do we compute the final document score from these subscores, we provide an example: 
+
+A detailed description of how we compute these subscores is given below in ## Detailed description. 
+
+These will be used to compute a final score, which is a summary of the others, and is computed as follows: 
+
+We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_. The resulting number is then multiplied by the rest of subscores used gathered in what we consider a _penalty_score_. The penalty score multiplies the rest of scores as follows.
+
+
+The final socre is then done this way:
+
+`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
+
+
+To understand the meaning of the final score, we provide an example: 
 
 This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
 
@@ -46,15 +59,24 @@ _Ti interessa saperne di più? Continua a seguirmi, e fai le tue domande che non
 
 [...]
 
-From the whole document, we get these scores: 
+From the whole document, we get these subscores: 
 
-|qualification_score|language_score|url_score|punctuation_score|bad_chars_score|
-|---|---|---|---|---|
-|8.2|9.9|1.0|1.0|1.0|
 
-|numbers_score|repeated_score|big_segments_score|great_segment_score|
-|---|---|---|---|
-|0.92|0.96|0.4|1.0|
+| Score  |    Value      |
+|---|---|
+| language_score | 9.9 |
+| big_segments_score | 0.4 |
+| largest_segments_score | 1.0 |
+| url_score | 1.0 |
+| punctuation_score | 1.0 |
+| bad_chars_score | 1.0 |
+| numbers_score | 0.92 |
+| repeated_score | 0.96 |
+
+And the final score computed as above explained is 8.2.  
+
+((9.9x0.8)+ 0.4+ 1 ) x (0.92 x 0.96x ((1+1+1)/3)) = 8.2. 
+
 
 The meaning of these punctuations is that we have a good text (_qualification_score_ = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a well source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
 
@@ -64,7 +86,7 @@ It has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent headers 
 
 [...] _Grammatica, livello avanzato ... Grammatica, livello avanzato_ [...]
 
-It probably contains a considerable amount of linguistic data in one or two segments (_great_segment_score_ = 1/1), but do not seem to be a long text (_big_segments_score_ = 0.4/1).
+It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but do not seem to be a long text (_big_segments_score_ = 0.4/1).
 
 ## Detailed description
 
