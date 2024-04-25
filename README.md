@@ -264,7 +264,7 @@ As other scores the proportion considered good or bad is language dependant. In 
 
 Not only too much punctuation is problematic, but also too few is undesired, because it could mean that the text crawled is an enumeration of tags, products, SEO phrases or other linguistically unstructured data.
 
-#### bad_chars_score
+### bad_chars_score
 
 processed with: `crawled_text_qualifier.valorate_bad_chars()`
 
@@ -333,10 +333,6 @@ Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_
 `2.4 * 1000 / 6.56.5`
 
 The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
-
-
-
-
 
 
 ## Computing the penalty_score
