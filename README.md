@@ -8,7 +8,7 @@ It gets as input format the HPLT v2 jsonl datasets.
  
 ## How does the tagger work
 
-In order to assign a score (**quality_score**) on a 10-point scale, the quality text tagger computes several subscores over the content and metadata of the document (higher is always better):
+In order to assign a score (**quality_score**) to a document, the quality text tagger computes several subscores over the content and metadata of the document (higher is always better):
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
