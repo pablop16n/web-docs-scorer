@@ -5,18 +5,18 @@ Quality text tagger is an application that assigns a score on a 10-point scale t
  
 ## How does the tagger work
 
-The quality tagger computes a score (**quality_score**) for each document which is obtained by using several subscores computed over the document textual indicators:
+The quality tagger computes a score (**quality_score**) for each document which is obtained by using several subscores computed over the document textual indicators (higher is always better):
 
-| Indicator subcore  |  Based on   |  Scale   | Sense of the score |
+| Indicator subcore  |  Based on   |  Scale   | 
 |---|---|---|---|
-| language_score | mean of language probability (segments vs documents) | 0 - 10 | Higher is better |
-| big_segments_score | presence of big text segments in content | 0 - 1 | Higher is better |
-| largest_segments_score | length of largest text segments | 0 - 1 | Higher is better |
-| urls_score | ratio of urls | 0 - 1 | Higher is worse |
-| numbers_score | ratio of number characters | 0 - 1 | Higher is worse |
-| punctuation_score | ratio of punctuation characters | 0 - 1 | Higher is worse |
-| bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 | Higher is worse |
-| repeated_score | ratio of repeated segments | 0 - 1 | Higher is worse | 
+| language_score | mean of language probability (segments vs documents) | 0 - 10 | 
+| big_segments_score | presence of big text segments in content | 0 - 1 | 
+| largest_segments_score | length of largest text segments | 0 - 1 | 
+| urls_score | ratio of urls | 0 - 1 | 
+| numbers_score | ratio of number characters | 0 - 1 | 
+| punctuation_score | ratio of punctuation characters | 0 - 1 | 
+| bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 | 
+| repeated_score | ratio of repeated segments | 0 - 1 | 
 
 A detailed description of how we compute these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
