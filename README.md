@@ -203,12 +203,12 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 processed with: `crawled_text_qualifier.valorate_lang()`
 
-The _language_score_ gets a value from 0 to 10, that describes the amount of segments in the correct language inside a document. It uses the information about language at segment and document level as provided in the input files as metadata. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use word characters to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
+The _language_score_ gets a value from 0 to 10 linked to the amount of segments in the correct language inside a document. It uses the information about language at segment and document level provided as metadata in the input files. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use word characters to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
 
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
-This score is not sensitive to short segments, which very frequently correspond to header or footer menus, social media listing, partners listing, etc. These strings are troublesome for language identifiers as they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number of characters for Spanish.
+This score is not sensitive to short segments, which very frequently correspond to header or footer menus, social media listing, partners listing, etc. These strings are troublesome for language identifiers as they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number of characters for Spanish segments.
 
 ### big_segments_score and largest_segments_score
 
@@ -218,17 +218,17 @@ These two scores get values between 0 and 1 that aim to determine the presence o
 
 For the _big_segments_score_, a document will recieve a 0.1 score point for every big segment up to a maximum score of 1. The length of what we consider a 'big segment' depends on each language and is measured using word characters. In Spanish, we set the minimum number of word characters to 250 but in English, for example, the minimum is 232.
 
-On the other hand, the _largest_segments_score_, it is used to mesure the documents that contains at least one very big segment. The lenght of what we consider big segments is also language dependant. In Spanish, a big segment has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assing a value from 0 to 1. If there is more than one of these segments, we use an average of them.
+On the other hand, the _largest_segments_score_, is used to measure if documents contain at least one very big segment. The lenght of what we consider big segments is also language-dependent. In Spanish, a big segment has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assing a value from 0 to 1. If there is more than one of these segments, we use an average of them.
 
 ### urls_score
 
 processed with: `crawled_text_qualifier.valorate_urls()`
 
-To determinate the number of urls in the document we look for "www" or "http" strings in the whole text. We search the ratio between the number of urls and the number of segments in the text, this ignore short segments, like it is done in _language_score_. The _urls_score_ is language independant and is calculated as follows:
+To obtain this score, we look for the number of urls in a document. In particular, we look for "www" or "http" strings in the whole text. We search the ratio between the number of urls and the number of segments in the text. We ignore short segments, as for the _language_score_. The _urls_score_ is language independent and is computed as follows:
 
 `number_of_urls / number_of_segments * 100`
 
-We agree that documents with 5 or less urls each 100 segments is a enough good ratio, more than 5 must be penalized and 100/100 are usually worthless texts:
+Documents with 5 or less urls each 100 segments is set as the upper ratio threshold, penalization is applied when more than 5 url are present as follows:
 
 | Url score  |    Ratio      |
 |---|---|
@@ -241,11 +241,11 @@ We agree that documents with 5 or less urls each 100 segments is a enough good r
 
 processed with: `crawled_text_qualifier.valorate_numbers()`
 
-The score of numbers is used to determinate the excess presence of number characters in the entire text. It is calculated comparing the ratio of numbers and word characters:
+This score is used to determine if there is a high numer of numeric characters in a document. It is computed by comparing the ratio of numbers and word characters:
 
 `numbers_characters / word_characters * 100`
 
-The applicated traduction for every ratio is variable depending on the language. For Spanish we assign this scores:
+The ratio threshold and its matching score depends on every language. In Spanish, for example, we assign scores as follows:
 
 | Number score  |    Ratio      |
 |---|---|
@@ -263,7 +263,7 @@ This score is used to penalize texts with too much or too little amount of punct
 
 `punctuation_characters / word_characters * 100`
 
-As other scores the proportion considered good or bad is language dependant. In Spanish we give the next scores to these proportions:
+The threshold for this ratio and its matching scoring is language-dependent. In Spanish we give the next scores to the following ratios:
 
 | Punctuation score  |    Ratio      |
 |---|---|
@@ -278,7 +278,7 @@ As other scores the proportion considered good or bad is language dependant. In 
 | 0.5 → 0 | 0.5% → 0.3% |
 | 0 | <0.3% |
 
-Not only too much punctuation is problematic, but also too few is undesired, because it could mean that the text crawled is an enumeration of tags, products, SEO phrases or other linguistically unstructured data.
+Not only too much punctuation is problematic, but also too few, usually leading to documents that contain a list of products, tags, SEO phrases, etc.
 
 ### bad_chars_score
 
