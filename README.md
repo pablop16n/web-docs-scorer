@@ -218,7 +218,7 @@ These two scores get values between 0 and 1 that aim to determine the presence o
 
 For the _big_segments_score_, a document will recieve a 0.1 score point for every big segment up to a maximum score of 1. The length of what we consider a 'big segment' depends on each language and is measured using word characters. In Spanish, we set the minimum number of word characters to 250 but in English, for example, the minimum is 232.
 
-On the other hand, the _largest_segments_score_, is used to measure if documents contain at least one very big segment. The lenght of what we consider big segments is also language-dependent. In Spanish, a big segment has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assing a value from 0 to 1. If there is more than one of these segments, we use an average of them.
+On the other hand, the _largest_segments_score_, is used to measure if documents contain at least one very big segment. The lenght of what we consider big segments is also language-dependent. In Spanish, a big segment has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assing a value from 0 to 1. If there is more than one of these segments, we use an average of them. GEMA: no entiendo como se calcula. 
 
 ### urls_score
 
@@ -284,11 +284,12 @@ Not only too much punctuation is problematic, but also too few, usually leading 
 
 processed with: `crawled_text_qualifier.valorate_bad_chars()`
 
-The _bad_chars_score_ is used to penalize texts with undesireded characters:
+The _bad_chars_score_ is used to penalize texts with undesired characters:
 
 `bad_characters / word_characters * 100`
 
-As the previous scores it is variable depending on the language. For Spanish we assign this scores:
+
+The threshold for this ratio and its matching scoring is language-dependent. In Spanish we give the next scores to the following ratios:
 
 | Bad chars score  |    Ratio      |
 |---|---|
@@ -302,9 +303,7 @@ As the previous scores it is variable depending on the language. For Spanish we 
 
 processed with: `crawled_text_qualifier.valorate_repeated()`
 
-This score uses the proportion of repeated segments. Short segments are ignored using the same logic as the language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score.
-
-
+This score computes the proportion of repeated segments. Short segments are ignored using the same logic as the for language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score. 
 
 ## Adaptating subscores to different languages 
 
