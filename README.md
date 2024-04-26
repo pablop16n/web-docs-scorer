@@ -28,7 +28,7 @@ The **quality_score** will be computed using these subscores.
 
 processed with: `crawled_text_qualifier.valorate_text()`
 
-The quality score takes the above described set of subscores computed over a document and uses them as follows:
+The quality score takes the above described set of subscores and uses them as follows:
 
 1. First, a **basic score** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
 
