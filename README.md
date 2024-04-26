@@ -5,7 +5,7 @@ Quality text tagger is an application that assigns a score on a 10-point scale t
  
 ## How does the tagger work
 
-The quality tagger computes a score for each document ( the **quality_score**) which is obtained by using several subscores computed over the document textual quality indicators:
+The quality tagger computes a score (**quality_score**) for each document which is obtained by using several subscores computed over the document textual indicators:
 
 | Indicator subcore  |  Based on   |  Scale   | Sense of the score |
 |---|---|---|---|
@@ -18,7 +18,7 @@ The quality tagger computes a score for each document ( the **quality_score**) w
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 | Higher is worse |
 | repeated_score | ratio of repeated segments | 0 - 1 | Higher is worse | 
 
-A detailed description of how we compute these subscores is given below in section [Detailed description](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description-of-how-each-subscore-is-computed). 
+A detailed description of how we compute these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
 From the subscores, we compute the **quality_score** as follows: 
 
@@ -26,9 +26,12 @@ A **basic score** is obtained by adding the subscores that represent positive as
 
 `basic score`= `language_score * 0.8 + big_segments_score + largest_segments_score`
 
-Then, we use the rest of the subscores which may represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_) to compute a **penalty_score** using the following formula:
+Then, we use the rest of the subscores which represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_) to compute a **penalty_score** using the following formula:
 
 `penalty score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
+
+
+
 
 We get the final **quality_score** by multipliying the **basic score** by the **penalty_score**: 
 
@@ -92,7 +95,7 @@ And it has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent head
 
 ### Another example of the quality_score
 
-The following excerpt belongs to the document `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset which got a **quality_score** of 1.5:
+The following excerpt belongs to the file `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset which got a **quality_score** of 1.5:
 
 > [...]
 >  
@@ -114,7 +117,7 @@ The following excerpt belongs to the document `example/example2.txt`, a Chinese 
 
 We compute the subscores: 
 
-| Score  |    Value      |
+| Subscore  |    Value      |
 |---|---|
 | language_score | 8.0 |
 | big_segments_score | 0.1 |
@@ -124,27 +127,27 @@ We compute the subscores:
 | bad_chars_score | 1 |
 | numbers_score | 0.56 |
 | repeated_score | 1 |
-  is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments. 
 
-
-This text seems to be made of mainly short sentences (note the very low values for big_segments_score and largest_segments_score ) and even from some mix of languages according to the language identifier. This makes the basic score already a low one: 
+This text seems to be made of mainly short sentences (note the very low values for big_segments_score and largest_segments_score) and even from some mix of languages according to the language identifier. This makes the basic score already a low one: 
 
 |basic score| Result |
 |---|---|
 |8 * 0.8 + 0.1 + 0| 6.5 |
 
 
-It does not seem to have bad punctuation, or characters and it does not contain repeated sentences, but it has an excess of numbers and urls. This impacts highly the penalty_score:
+The document does not seem to have bad punctuation, or characters and it does not contain repeated sentences, but it has an excess of numbers and urls. This impacts highly the penalty_score value:
 
 |penalty score| Result |
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
 
-The final qualty score has a poor value:
+Thus, the final qualty_score is also very low:
+
 |basic score * penalty score| Result |
 |---|---|
 | 6.5 * 0.24| 1.5 |
 
+This document is considere an undesirable document. 
 
 ## Usage
 
@@ -176,23 +179,24 @@ Output
 
 processed with: `crawled_text_qualifier.valorate_text()`
 
-The final score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
+The final quality_score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
 
 `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 ## Computing the penalty_score
 
-The subscores used to compute the **penalty_score** are: urls_score, numbers, punctuation, bad_chars and repeated segments
-
-These subscores are considered negative scores. They range on a scale from 0 to 1. A score of 1 in any of these indicators means that the text is good enough to not be penalized but less than 0.8 will have an important effect in the final score and less than 0.5 will penalize it severely. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
-
 processed with: `crawled_text_qualifier.custom_mean()`
 
-The _penalty_score_ unify the following scores: _url_score_, _punctuation_score_, _bad_chars_score_, _numbers_score_ and repeated_score. To calculate it the two lowest values are multiplied by the average of the rest of values:
+The subscores used to compute the **penalty_score** are: urls_score, numbers, punctuation, bad_chars and repeated segments
+
+These subscores represent negative aspects of the document content. They range on a scale from 0 to 1, where 1 means that no penalization should be applied. Bellow 1, 0.8 will have an important effect in the final score and less than 0.5 will penalize it severely. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
+
+
+To compute the penalty score,  two lowest values from the above mentioned scores are multiplied by the average of the rest of values:
 
 `first_minor_value * second_minor_value * average(other_values)`
 
-We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
+We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out of the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
 
 ## Computing subscores
