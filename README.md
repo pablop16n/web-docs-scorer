@@ -1,13 +1,15 @@
 # Quality text tagger
 
-Quality text tagger is an application that assigns a score on a 10-point scale to documents in any language supported by a particular language identifier. The goal is to distinguish among desirable and undesirable documents in big corpora derived from crawled websites. We consider desirable those documents that are mainly made of linguistic data. What we seek in desiderable documents is texts with long and well constructed paragraphs. Conversely, those documents made of mainly non-linguistic characters (like code or emojis) or which show an excess of numbers or puctuation (like calendars or pagination) are to be considered undesirable. 
+Quality text tagger is an application that assigns a score on a 10-point scale to a document. The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
+
+Our goal is to distinguish among good and bad documents from crawled websites. Good documents in our setting are those mainly made of linguistic data, containing a big portion of running text divide among long and well constructed paragraphs. Conversely, we consider bad those documents mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation, repetitions, etc.  
 
  
 ## How does the tagger work
 
-The quality tagger computes a score (**quality_score**) for each document which is obtained by using several subscores computed over the document textual indicators (higher is always better):
+In order to assign a score (**quality_score**) on a 10-point scale, the quality text tagger computes several subscores over the content and metadata of the document (higher is always better):
 
-| Indicator subcore  |  Based on   |  Scale   | 
+| Subcore  |  Based on   |  Scale   | 
 |---|---|---|
 | language_score | mean of language probability (segments vs documents) | 0 - 10 | 
 | big_segments_score | presence of big text segments in content | 0 - 1 | 
@@ -18,15 +20,15 @@ The quality tagger computes a score (**quality_score**) for each document which 
 | bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 | 
 | repeated_score | ratio of repeated segments | 0 - 1 | 
 
-A detailed description of how we compute these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
+A detailed description about these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
-From the subscores, we compute the **quality_score** which provides a single score for each document on a 0-to-10 scale in which good documents should be found between 5 and 10 and bad documents, under 5.
+The **quality_score** will be computed using these subscores. 
 
 ### Computing the quality_score
 
 processed with: `crawled_text_qualifier.valorate_text()`
 
-The quality score takes the previous set of subscores and uses them as follows:
+The quality score takes the above described set of subscores computed over a document and uses them as follows:
 
 1. First, a **basic score** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
 
@@ -43,13 +45,11 @@ Please, see section [Computing the penalty_score](https://gitlab.prompsit.com/hp
 `quality score` = `basic score * penalty score`
 
 
-
-
 ### An example of the quality_score
 
-To understand better how we compute the **quality_score** and what does it mean, we provide an example: 
+We show a practical example on how the **quality_score** is computed and its meaning for a document from the HPLT v1.2 Italian dataset. 
 
-This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole document can be found in `example/example1.jsonl`:
+This is an excerpt of a whole document from this dataset that can be found in `example/example1.jsonl`:
 
 > [...]
 > 
@@ -64,7 +64,7 @@ This is an excerpt of a complete analized text from HPLT v1.2 Italian, the whole
 > [...]
 
 
-From the whole document, we get these subscores: 
+From this document, we get these subscores: 
 
 | Subcores  |    Value      |
 |---|---|
@@ -77,7 +77,7 @@ From the whole document, we get these subscores:
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
-The document final **quality score** is computed using these subscore values as above explained:  
+The document **quality score** is computed using these subscores values as above explained:  
 
 **basic score** = 9.9 x 0.8 + 0.4 + 1 = **9.32**
 
