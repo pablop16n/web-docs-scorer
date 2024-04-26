@@ -1,38 +1,38 @@
 # Quality text tagger
 
-Quality text tagger is an application that assigns scores on a 10-point scale to given documents in any language supported by a particular language identifier. The goal is to distinguish among desirable and undesirable documents in big corpora derived from crawled websites. We consider desirable those documents that are mainly made of linguistic data. What we seek in desiderable documents is texts with long and well constructed paragraphs. Conversely, those documents made of mainly non-linguistic characters (like code or emojis) or which show an excess of numbers or puctuation (like calendars or pagination) should be considered undesirable to our application. 
+Quality text tagger is an application that assigns a score on a 10-point scale to documents in any language supported by a particular language identifier. The goal is to distinguish among desirable and undesirable documents in big corpora derived from crawled websites. We consider desirable those documents that are mainly made of linguistic data. What we seek in desiderable documents is texts with long and well constructed paragraphs. Conversely, those documents made of mainly non-linguistic characters (like code or emojis) or which show an excess of numbers or puctuation (like calendars or pagination) are to be considered undesirable. 
 
  
 ## How does the tagger work
 
-The quality tagger provides a score to a document (**quality_score**) which is obtained from several subscores computed over the contents of the document for the following indicators:
+The quality tagger computes a score for each document ( the **quality_score**) which is obtained by using several subscores computed over the document textual quality indicators:
 
-| Subscore  |  Based on   |  Scale   |
-|---|---|---|
-| language_score | mean of language probability (segments vs documents) | 0 - 10 |
-| big_segments_score | presence of big text segments in content | 0 - 1 |
-| largest_segments_score | length of largest text segments | 0 - 1 |
-| urls_score | ratio of urls | 0 - 1 |
-| numbers_score | ratio of number characters | 0 - 1 |
-| punctuation_score | ratio of punctuation characters | 0 - 1 |
-| bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 |
-| repeated_score | ratio of repeated segments | 0 - 1 |
+| Indicator subcore  |  Based on   |  Scale   | Sense of the score |
+|---|---|---|---|
+| language_score | mean of language probability (segments vs documents) | 0 - 10 | Higher is better |
+| big_segments_score | presence of big text segments in content | 0 - 1 | Higher is better |
+| largest_segments_score | length of largest text segments | 0 - 1 | Higher is better |
+| urls_score | ratio of urls | 0 - 1 | Higher is worse |
+| numbers_score | ratio of number characters | 0 - 1 | Higher is worse |
+| punctuation_score | ratio of punctuation characters | 0 - 1 | Higher is worse |
+| bad_chars_score | ratio of bad characters: emojis, non word punctuation, separators, etc. | 0 - 1 | Higher is worse |
+| repeated_score | ratio of repeated segments | 0 - 1 | Higher is worse | 
 
 A detailed description of how we compute these subscores is given below in section [Detailed description](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#detailed-description-of-how-each-subscore-is-computed). 
 
-These subscores will be used to compute a final **quality_score** as follows: 
+From the subscores, we compute the **quality_score** as follows: 
 
-We depart from an initial number where the _language_score_ has an initial weigth of 80% (`language_score * 0.8`) to which we add the subscores that have to do with segments length, that is _big_segments_score_ and _largest_segments_score_: 
+A **basic score** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
 
- `language_score * 0.8 + big_segments_score + largest_segments_score`
+`basic score`= `language_score * 0.8 + big_segments_score + largest_segments_score`
 
-Then, we use the rest of the subscores to compute a **penalty_score** using the the following formula: 
+Then, we use the rest of the subscores which may represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_) to compute a **penalty_score** using the following formula:
 
-`penalty_score` = `first_minor_value * second_minor_value * average (remaining_values) `
+`penalty score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-We get the final **`quality_score`** by multipliying the initial number by the **penalty_score**: 
+We get the final **quality_score** by multipliying the **basic score** by the **penalty_score**: 
 
-`quality_score` = `(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
+`quality score` = `basic score * penalty score`
 
 
 Please, see sections [Computing the quality_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-quality_score) and [Computing the penalty_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details. 
@@ -72,10 +72,16 @@ From the whole document, we get these subscores:
 
 The document final **quality score** is computed using these subscore values as above explained:  
 
-(9.9 x 0.8 + 0.4 + 1) x (0.92 x 0.96 x ((1+1+1)/3)) = 8.2 
+**basic score** = 9.9 x 0.8 + 0.4 + 1 = **9.32**
+
+**penalty score** = 0.92 x 0.96 x ((1+1+1)/3) =  **0.88**
+
+**quality score** = 9.32 x 0,88 = **8.2** 
 
 
-The meaning of the qualtiy scores and subscores is that we have a good text (**quality_score** = 8.2/10) undoubtedly in Italian (_language_score_ = 9.9/10). It must be a good source of linguistic data, without strange segments, html code, spam of links or something similar (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). Maybe contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due a calendar present in the text:
+This means that we have a good document (**quality_score** = 8.2/10), undoubtedly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but not too many long segments (_big_segments_score_ = 0.4/1).
+
+The document does not to contain url, punctuation or bad characters noise (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
 [...] _Gennaio 2022 \n Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
@@ -83,12 +89,10 @@ And it has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent head
 
 [...] _Grammatica, livello avanzato ... Grammatica, livello avanzato_ [...]
 
-It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but does not seem to be a long text (_big_segments_score_ = 0.4/1).
-
 
 ### Another example of the quality_score
 
-The document named `example/example2.txt` has been analized with this application. It contains a crawled text in Chinese from HPLT v1.2 that obtained a **quality_score** of 1.5:
+The following excerpt belongs to the document `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset which got a **quality_score** of 1.5:
 
 > [...]
 >  
@@ -120,25 +124,24 @@ We compute the subscores:
 | bad_chars_score | 1 |
 | numbers_score | 0.56 |
 | repeated_score | 1 |
-
-This text is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments. 
-
-However, the big_segments_score is very low and the language score is not very good. This makes the initial calculation start poorly:
+  is considered good in some aspects. Language, punctuation and bad chars are as expected and there are no repeated segments. 
 
 
-|(language_score*0.8 + big_segments_score + largest_segments_score)| Result |
+This text seems to be made of mainly short sentences (note the very low values for big_segments_score and largest_segments_score ) and even from some mix of languages according to the language identifier. This makes the basic score already a low one: 
+
+|basic score| Result |
 |---|---|
 |8 * 0.8 + 0.1 + 0| 6.5 |
 
 
-But the main problem comes with the excess of numbers and urls in the moment we add the penalty_score:
+It does not seem to have bad punctuation, or characters and it does not contain repeated sentences, but it has an excess of numbers and urls. This impacts highly the penalty_score:
 
-|first_minor_value * second_minor_value * average(other_values)| Result |
+|penalty score| Result |
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
 
-So the penalty_score will reduce the base (6.5) drastically:
-|(language_score*0.8 + big_segments_score + largest_segments_score) * penalty_score| Result |
+The final qualty score has a poor value:
+|basic score * penalty score| Result |
 |---|---|
 | 6.5 * 0.24| 1.5 |
 
