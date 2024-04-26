@@ -203,25 +203,22 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 processed with: `crawled_text_qualifier.valorate_lang()`
 
-The _language_score_ is a value from 0 to 10, that descrives the amount of segments in the correct language. It is calculated using the language identification label that _>>LANGUAGE_DETECTOR<<_ gives to every segment of the text. The language detector also asigns a tag to the complete document, which is considered the main language. Segments whose label agrees with the main language one are considered correct and segments with a different label are intended as wrong. We use the word characters to obtain a proportion of correct and incorrect ones:
+The _language_score_ gets a value from 0 to 10, that describes the amount of segments in the correct language inside a document. It uses the information about language at segment and document level as provided in the input files as metadata. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use word characters to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
 
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
-This score is not sensitive to short segments, which seem to be header or footer menus, listing of social media, collaborator partners, etc. These strings are troublesome for the language detector, because they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number for Spanish.
+This score is not sensitive to short segments, which very frequently correspond to header or footer menus, social media listing, partners listing, etc. These strings are troublesome for language identifiers as they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number of characters for Spanish.
 
 ### big_segments_score and largest_segments_score
 
 processed with: `crawled_text_qualifier.valorate_big_texts()`
 
-These two scores consist in a punctuation from 0 to 1 that aim to determinate the presence of big groups of word characters in the correct language.
+These two scores get values between 0 and 1 that aim to determine the presence of big groups of word characters in the correct language.
 
-For the _big_segments_score_, a document will recieve a 0.1 score point for every big segment, with a maximum of 1. The length of what we considered 'big segment' is language dependant and it is mesured using only the word characters value. In Spanish, we decided that a segment with more than 250 word characters is considered within this score, in English, for example, a higher of 232 value is enough.
+For the _big_segments_score_, a document will recieve a 0.1 score point for every big segment up to a maximum score of 1. The length of what we consider a 'big segment' depends on each language and is measured using word characters. In Spanish, we set the minimum number of word characters to 250 but in English, for example, the minimum is 232.
 
-In the other hand, talking about the _largest_segments_score_, it is used to mesure the documents that contains almost one very big segment in the target language. The length needed to consider a very big segment is also language dependant. In Spanish we used 625 (or less) and 1000 (or more) word characters as a point of reference for our minimum an maximum numbers to adjudicate from 0 to 1. If there are more than one of these segments, we use an average of them.
-
-
-
+On the other hand, the _largest_segments_score_, it is used to mesure the documents that contains at least one very big segment. The lenght of what we consider big segments is also language dependant. In Spanish, a big segment has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assing a value from 0 to 1. If there is more than one of these segments, we use an average of them.
 
 ### urls_score
 
