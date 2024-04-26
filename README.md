@@ -20,9 +20,15 @@ The quality tagger computes a score (**quality_score**) for each document which 
 
 A detailed description of how we compute these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
-From the subscores, we compute the **quality_score** as follows: 
+From the subscores, we compute the **quality_score** which provides a single score for each document on a 0-to-10 scale in which good documents should be found between 5 and 10 and bad documents, under 5.
 
-A **basic score** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
+### Computing the quality_score
+
+processed with: `crawled_text_qualifier.valorate_text()`
+
+The quality score takes the previous set of subscores and applies the following formulae:
+
+First, a **basic score** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
 
 `basic score`= `language_score * 0.8 + big_segments_score + largest_segments_score`
 
@@ -30,15 +36,13 @@ Then, we use the rest of the subscores which represent negative aspects of the d
 
 `penalty score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
 
+Please, see section [Computing the penalty_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
-
-
-We get the final **quality_score** by multipliying the **basic score** by the **penalty_score**: 
+Finally, we get the **quality_score** by multipliying the **basic score** by the **penalty_score**: 
 
 `quality score` = `basic score * penalty score`
 
 
-Please, see sections [Computing the quality_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-quality_score) and [Computing the penalty_score](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details. 
 
 
 ### An example of the quality_score
@@ -175,13 +179,6 @@ Output
 - HTML document with histograms about all languages present in the input
 
 
-## Computing the quality_score
-
-processed with: `crawled_text_qualifier.valorate_text()`
-
-The final quality_score is a summary of the others. The _language_score_ has an initial weigth of 80% (`language_score * 0.8`). The scores about segments length add the missing 20% (_big_segments_score_ and _largest_segments_score_). The resulting number is multiplied by the rest of scores using the _penalty_score_. The calculation is done this way:
-
-`(language_score * 0.8 + big_segments_score + largest_segments_score) * penalty_score`
 
 ## Computing the penalty_score
 
@@ -192,7 +189,7 @@ The subscores used to compute the **penalty_score** are: urls_score, numbers, pu
 These subscores represent negative aspects of the document content. They range on a scale from 0 to 1, where 1 means that no penalization should be applied. Bellow 1, 0.8 will have an important effect in the final score and less than 0.5 will penalize it severely. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
 
 
-To compute the penalty score,  two lowest values from the above mentioned scores are multiplied by the average of the rest of values:
+To compute the penalty score, the two lowest values from the above mentioned subsscores are multiplied by the average of the rest of values:
 
 `first_minor_value * second_minor_value * average(other_values)`
 
