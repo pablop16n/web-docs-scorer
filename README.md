@@ -1,6 +1,8 @@
 # Quality text tagger
 
-Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good  and bad documents and it has been developed to tag documents from crawled websites. Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running text divide among long and well constructed paragraphs. Conversely, we consider bad (scores 0-4,99) those documents mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation, repetitions, etc.  
+Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good and bad documents and it has been developed to make this distinction for documents from crawled websites. 
+
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running text containing long and well constructed paragraphs. Conversely, bad documents (scores 0-4,99) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
 
@@ -8,7 +10,7 @@ It gets as input format the HPLT v2 jsonl datasets.
  
 ## How does the tagger work
 
-In order to assign a score (**quality_score**) to a document, the quality text tagger computes several subscores over the content and metadata of the document (higher is always better):
+In order to assign a score (**quality_score**) to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
