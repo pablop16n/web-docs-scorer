@@ -355,11 +355,11 @@ Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_
 
 `2.4 * 1000 / 6.5`
 
-The relationship between punctuation and word characters is inversely proportional: as the number of punctuation characters per word increases, the average number of word characters decreases. (GEMA: revisar esto. )
+The relationship between punctuation and word characters is inversely proportional: as the number of punctuation symbols  per word characters increases, the average number of word characters decreases. (GEMA: revisar esto. )
 
 ## Glossary
 - _document_: whole text of a crawled website
-- _segment_: every string group between `\n` character
+- _segment_: every string grouped between a `\n` character
 - _x type character_: see next table
 
 | Name  |  Meaning   |  utf-8 ranges   |
