@@ -338,15 +338,16 @@ Consequently, the adapted table for Russian concerning the _punctuation_score_ i
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
 | 1 | 0.9 → 2.5 | 1.2 → 3.3 |
-| __Too much__  | | |
+| __Too much__  |
 | 1 → 0.7 | 2.5 → 9 | 3.3 → 12 |
 | 0.7 → 0.5 | 9 → 13 | 12 → 17.3 |
 | 0.5 → 0 | 13 → 25 | 17.3 → 33.3 |
 | 0 | >25 | >33.3 |
-| __Too few__  | | |
+| __Too few__  |
 | 0 → 0.5 | 0.9 → 0.5 | 1.2 → 0.67 |
 | 0.5 → 0 | 0.5 → 0.3 | 0.67 → 0.4 |
 | 0 | <0.3 | <0.4 |
+
 
 Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. We use the punctuation ratios to transform the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored in somes scores. For example, Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters, in Japanese, with 6.5, 369 characters is enough according to the inverse cross-multiplication:
 
