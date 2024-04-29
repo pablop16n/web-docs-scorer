@@ -2,7 +2,7 @@
 
 Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good and bad documents and it has been developed to make this distinction for documents from crawled websites. 
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running text containing long and well constructed paragraphs. Conversely, bad documents (scores 0-4,99) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4,99) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
 
