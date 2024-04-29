@@ -10,7 +10,7 @@ It gets as input format the HPLT v2 jsonl datasets.
  
 ## How does the tagger work
 
-In order to assign a score (**quality_score**) to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
+In order to assign a score (**_quality_score_**) to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
@@ -320,7 +320,7 @@ In our experiments, as a first approach, we stablished the desidered ratios for 
 To adapt the values to other languages we used the scores and the labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we select the 50% best language-scored documents and compute ratios for the punctuation, bad characters and numbers subscores. Medians for each subscore are computed and stored in `language_adaptation/medians_language.csv` using the script `language_adaptation/extract_ratios.py`. (GEMA: review this). Medians are is used in the main script (`crawled_text_qualifier.py`) to create equivalences between ratio and scores. (GEMA: and this)
 
 
-The application of the Spanish ratios-score logic to other languages which differ considerably from it, as shown in the following histograms, produces innacurate quality_scores which penalize undesirably documents that look good:
+The application of the Spanish ratios-score logic to other languages which differ considerably from it, as shown in the following histograms, produces innacurate _quality_scores_ in Korean which penalize undesirably documents that look good:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
@@ -330,11 +330,9 @@ To solve this problem we decided to use medians as a point of reference to set m
 
 ![alt text](example/korean_adapted.png)
 
-Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so no adjustments are needed. However, for punctuation the median is different: 3.2 for Russian and 2.4 in Spanish. In this case adjustments are needed. The main script uses again, a cross-multiplication to solve this: 
+Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so no adjustments are needed. However, for regular punctuation the median is different: 3.2 for Russian and 2.4 in Spanish. In this case adjustments are needed. The main script uses again, a cross-multiplication to solve this. If we take the 0.9 ratio which in Spanish is considered a 1/1 score, this means that Russian needs a 1.2 ratio to get a 1/1 socre in the _punctuation_score_:
 
-`(3.2 * 0.9)/2.4 = 1.2`
-
-(GEMA: el 0.9, ¿de dónde sale?)
+`(3.2 * 0.9) / 2.4 = 1.2`
 
 Consequently, the adapted table for Russian concerning the _punctuation_score_ is as follows:
 
@@ -352,11 +350,11 @@ Consequently, the adapted table for Russian concerning the _punctuation_score_ i
 | 0 | <0.3 | <0.4 |
 
 
-Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. For example, punctuation ratios are used to transform (GEMA: transform?) the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored to compute some scores. For example, in Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters is enough according to the inverse cross-multiplication:
+Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored to compute some scores. For example, in Spanish we use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters is enough according to the inverse cross-multiplication:
 
 `2.4 * 1000 / 6.5`
 
-The relationship between punctuation and word characters is inversely proportional: as the number of punctuation symbols  per word characters increases, the average number of word characters decreases. (GEMA: revisar esto. )
+The relationship between punctuation and word characters is inversely proportional: as the number of punctuation symbols per word characters increases, the average number of word characters decreases. (GEMA: revisar esto. )
 
 ## Glossary
 - _document_: whole text of a crawled website
