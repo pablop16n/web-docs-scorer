@@ -324,16 +324,16 @@ The application of the Spanish ratios-score logic to other languages which diffe
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
 
-To solve this problem we decided to use medians as a point of reference for move the scores to more correct ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relationship:
+To solve this problem we decided to use medians as a point of reference for move the scores to more correct ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relation:
 
 ![alt text](example/korean_adapted.png)
 
 
-Using another example, the median of both Russian and Spanish, regarding bad chars, is the same (0.8), so they will use the same logic as we shown in the table of bad chars. The punctuation ratio is somewhat different, 3.2 for Russian and 2.4 in Spanish, that means that the Spanish 0.9 ratio of the _punctuation_score_, that we presented as a perfect scored value (1), is not valid for Russian. The main script uses a cross-multiplication to solve this: 
+Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so they will use the same logic shown in the above table. However, for punctuation the mean is different: 3.2 for Russian and 2.4 in Spanish, so, adjustments are needed The main script uses again, a cross-multiplication to solve this: 
 
 `(3.2 * 0.9)/2.4 = 1.2`
 
-Consequently, the adapted table for Russian in respect to _punctuation_score_ is as follows:
+Consequently, the adapted table for Russian concerning the _punctuation_score_ is as follows:
 
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
@@ -343,7 +343,7 @@ Consequently, the adapted table for Russian in respect to _punctuation_score_ is
 | 0.7 → 0.5 | 9 → 13 | 12 → 17.3 |
 | 0.5 → 0 | 13 → 25 | 17.3 → 33.3 |
 | 0 | >25 | >33.3 |
-| __Too few__  | |
+| __Too few__  | | |
 | 0 → 0.5 | 0.9 → 0.5 | 1.2 → 0.67 |
 | 0.5 → 0 | 0.5 → 0.3 | 0.67 → 0.4 |
 | 0 | <0.3 | <0.4 |
