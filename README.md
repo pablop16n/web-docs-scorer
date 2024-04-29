@@ -324,14 +324,16 @@ The application of the Spanish ratios-score logic to other languages which diffe
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
 
-To solve this problem we decided to use medians as a point of reference for move the scores to more correct ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relation:
+To solve this problem we decided to use medians as a point of reference to set more accurate score ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relation:
+
 
 ![alt text](example/korean_adapted.png)
 
-
-Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so they will use the same logic shown in the above table. However, for punctuation the mean is different: 3.2 for Russian and 2.4 in Spanish, so, adjustments are needed The main script uses again, a cross-multiplication to solve this: 
+Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so no adjustments are needed. However, for punctuation the median is different: 3.2 for Russian and 2.4 in Spanish. In this case adjustments are needed. The main script uses again, a cross-multiplication to solve this: 
 
 `(3.2 * 0.9)/2.4 = 1.2`
+
+(GEMA: el 0.9, ¿de dónde sale?)
 
 Consequently, the adapted table for Russian concerning the _punctuation_score_ is as follows:
 
@@ -349,11 +351,11 @@ Consequently, the adapted table for Russian concerning the _punctuation_score_ i
 | 0 | <0.3 | <0.4 |
 
 
-Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. We use the punctuation ratios to transform the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored in somes scores. For example, Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters, in Japanese, with 6.5, 369 characters is enough according to the inverse cross-multiplication:
+Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. For example, punctuation ratios are used to transform (GEMA: transform?) the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored to compute some scores. For example, in Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters is enough according to the inverse cross-multiplication:
 
-`2.4 * 1000 / 6.56.5`
+`2.4 * 1000 / 6.5`
 
-The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
+The relationship between punctuation and word characters is inversely proportional: as the number of punctuation characters per word increases, the average number of word characters decreases. (GEMA: revisar esto. )
 
 ## Glossary
 - _document_: whole text of a crawled website
