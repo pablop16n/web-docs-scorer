@@ -1,6 +1,8 @@
 # Quality text tagger
 
-Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good  and bad documents and it has been developed to tag documents from crawled websites. Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running text divide among long and well constructed paragraphs. Conversely, we consider bad (scores 0-4) those documents mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation, repetitions, etc.  
+Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good and bad documents and it has been developed to make this distinction for documents from crawled websites. 
+
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4,99) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
 
@@ -8,7 +10,7 @@ It gets as input format the HPLT v2 jsonl datasets.
  
 ## How does the tagger work
 
-In order to assign a score (_**quality_score**_) to a document, the quality text tagger computes several subscores over the content and metadata of the document (higher is always better):
+In order to assign a score (**quality_score**) to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
@@ -313,49 +315,52 @@ processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
 Some of the subscores used to get the _quality_score_ are based on ratios that need to be computed for each language for optimal performance. These are: _punctuation_score_, _bad_chars_score_, _numbers_score_, _big_segments_score_, _largest_segments_score_ and 'short segments' that are ignored in several processing.
 
 
-In our experiments, as a first approach, we stablished the desidered ratios for each indicator (numbers, punctuation, etc.) in Spanish, using a sample of texts from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
+In our experiments, as a first approach, we stablished the desidered ratios for each indicator in Spanish, using a sample  from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
 
-To adapt the values to particular languages we used the scores and the labels provided by the language identification program in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the ratio of punctuation, bad characters and numbers. We extracted the median of these frame of filtered documents, which are saved in `language_adaptation/medians_language.csv`, with `language_adaptation/extract_ratios.py`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence of the data.
+To adapt the values to other languages we used the scores and the labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we select the 50% best language-scored documents and compute ratios for the punctuation, bad characters and numbers subscores. Medians for each subscore are computed and stored in `language_adaptation/medians_language.csv` using the script `language_adaptation/extract_ratios.py`. (GEMA: review this). Medians are is used in the main script (`crawled_text_qualifier.py`) to create equivalences between ratio and scores. (GEMA: and this)
 
 
-If the Spanish ratios-score logic is applied to other languages that differ significantly, the ratios would not fit correctly. As can be seen in these histograms, most of the inputs in this sample of Korean would be undesirably penalized:
+The application of the Spanish ratios-score logic to other languages which differ considerably from it, as shown in the following histograms, produces innacurate quality_scores which penalize undesirably documents that look good:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
 
-To solve this problem we decided to use medians as a point of reference for move the scores to more correct ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relationship:
+To solve this problem we decided to use medians as a point of reference to set more accurate score ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relation:
+
 
 ![alt text](example/korean_adapted.png)
 
+Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so no adjustments are needed. However, for punctuation the median is different: 3.2 for Russian and 2.4 in Spanish. In this case adjustments are needed. The main script uses again, a cross-multiplication to solve this: 
 
-Using another example, the median of both Russian and Spanish, regarding bad chars, is the same (0.8), so they will use the same logic as we shown in the table of bad chars ([_bad_chars_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#bad_chars_score)). The punctuation ratio is somewhat different, 3.2 for Russian and 2.4 in Spanish, that means that the Spanish 0.9 ratio of the _punctuation_score_, that we presented as a perfect scored value (1/1), is not valid for Russian. The main script uses a cross-multiplication to solve this: 
+`(3.2 * 0.9)/2.4 = 1.2`
 
-`(3.2 * 0.9) / 2.4 = 1.2`
+(GEMA: el 0.9, ¿de dónde sale?)
 
-Consequently, the adapted table for Russian in respect to _punctuation_score_ is as follows:
+Consequently, the adapted table for Russian concerning the _punctuation_score_ is as follows:
 
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
 | 1 | 0.9 → 2.5 | 1.2 → 3.3 |
-| __Too much__  | | |
+| __Too much__  |
 | 1 → 0.7 | 2.5 → 9 | 3.3 → 12 |
 | 0.7 → 0.5 | 9 → 13 | 12 → 17.3 |
 | 0.5 → 0 | 13 → 25 | 17.3 → 33.3 |
 | 0 | >25 | >33.3 |
-| __Too few__  | |
+| __Too few__  |
 | 0 → 0.5 | 0.9 → 0.5 | 1.2 → 0.67 |
 | 0.5 → 0 | 0.5 → 0.3 | 0.67 → 0.4 |
 | 0 | <0.3 | <0.4 |
 
-Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. We use the punctuation ratios to transform the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored in somes scores. For example, Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. In Japanese, with 6.5, 369 characters is enough according to the inverse cross-multiplication:
+
+Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. For example, punctuation ratios are used to transform (GEMA: transform?) the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored to compute some scores. For example, in Spanish use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters is enough according to the inverse cross-multiplication:
 
 `2.4 * 1000 / 6.5`
 
-The relationship is inversely proportional, the more punctuation each word characters, the less word characters the language will use on average.
+The relationship between punctuation and word characters is inversely proportional: as the number of punctuation symbols  per word characters increases, the average number of word characters decreases. (GEMA: revisar esto. )
 
 ## Glossary
 - _document_: whole text of a crawled website
-- _segment_: every string group between `\n` character
+- _segment_: every string grouped between a `\n` character
 - _x type character_: see next table
 
 | Name  |  Meaning   |  utf-8 ranges   |
