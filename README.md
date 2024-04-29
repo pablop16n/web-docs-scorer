@@ -316,10 +316,10 @@ Some of the subscores used to get the quality_score are based on ratios that nee
 
 In our experiments, as a first approach, we stablished the desidered ratios for each indicator in Spanish, using a sample  from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
 
-To adapt the values to particular languages we used the scores and the labels provided by the _>>LANGUAGE_DETECTOR<<_ in a sample of at least 10k documents per language. The 50% best language scored documents are selected to extract the ratio of punctuation, bad characters and numbers. We extracted the median of these frame of filtered documents, which are saved in `language_adaptation/medians_language.csv`, with `language_adaptation/extract_ratios.py`. These data is used in the main script (`crawled_text_qualifier.py`) to create an equivalence of the data.
+To adapt the values to other languages we used the scores and the labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we select the 50% best language-scored documents and compute ratios for the punctuation, bad characters and numbers subscores. Medians for each subscore are computed and stored in `language_adaptation/medians_language.csv` using the script `language_adaptation/extract_ratios.py`. (GEMA: review this). Medians are is used in the main script (`crawled_text_qualifier.py`) to create equivalences between ratio and scores. (GEMA: and this)
 
 
-If the Spanish ratios-score logic is applied to other languages that differ significantly, the ratios would not fit correctly, as can be seen in these histograms. Most of the inputs in this sample would be undesirably penalized:
+The application of the Spanish ratios-score logic to other languages which differ considerably from it, as shown in the following histograms, produces innacurate quality_scores which penalize undesirably documents that look good:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
