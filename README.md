@@ -2,7 +2,7 @@
 
 Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good and bad documents and it has been developed to make this distinction for documents from crawled websites. 
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4,99) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
 
@@ -25,9 +25,9 @@ In order to assign a score (**_quality_score_**) to a document, the quality text
 
 A detailed description about these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
-The **quality_score** will be computed using these subscores. 
+The **_quality_score_** will be computed using these subscores. 
 
-### Computing the quality_score
+### Computing the _quality_score_
 
 processed with: `crawled_text_qualifier.valorate_text()`
 
@@ -39,7 +39,7 @@ The _quality_score_ takes the above described set of subscores and uses them as 
 
 2. Then, we use the rest of the subscores which represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_) to compute a **_penalty_score_** using the following formula:
 
-`penalty score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
+`penalty_score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
 
 Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
@@ -162,7 +162,7 @@ This document is considere an undesirable document.
 #### crawled_text_qualifier.py (main script)
 
 Parameters 
-- **--input** directory with jsonl files provided by _>>LANGUAGE_DETECTOR<<_
+- **--input** directory with jsonl files provided by the language identifier
 - **--output:** existing directory
 
 Output
@@ -182,6 +182,13 @@ Parameters
 Output
 - HTML document with histograms about all languages present in the input
 
+#### language_adaptation/extract_ratios.py
+
+- **--input** directory with jsonl files with HPLT 1.2v like structure of key and values
+- **--output:** existing directory
+
+Output
+- CSV that contains the medians of numbers, punctuation and bad characters ratios in every language present in the directory
 
 
 ## Computing the _penalty_score_

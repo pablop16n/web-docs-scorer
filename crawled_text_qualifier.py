@@ -148,13 +148,6 @@ def join_utf_blocks(u_list, inverse=False):
         cases = f'\\{prefix}{x.split("-")[0]}-\\{prefix}{x.split("-")[1]}'
         pattern = f"{pattern}{cases}"
     return re.compile(f"{pattern}]")
-    
-numbers_pattern = join_utf_blocks(NUMBERS)
-bad_chars_pattern = join_utf_blocks(BAD_CHARS)
-punctuation_pattern = join_utf_blocks(PUNCTUATION_CHARS)
-word_pattern = join_utf_blocks(BAD_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True)
-#alphabetic chars are considered by default
-spaces_pattern = join_utf_blocks(SPACES)
 
 
 
@@ -365,6 +358,12 @@ def custom_mean(neg_values):
         return minor1 * minor2 * (sum(neg_values)/len(neg_values))
 
 def valorate_text(ref_lang, lang_segments, scores_lang, document):
+    numbers_pattern = join_utf_blocks(NUMBERS)
+    bad_chars_pattern = join_utf_blocks(BAD_CHARS)
+    punctuation_pattern = join_utf_blocks(PUNCTUATION_CHARS)
+    word_pattern = join_utf_blocks(BAD_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True) #alphabetic chars are considered by default
+    # spaces_pattern = join_utf_blocks(SPACES)
+
     condensed_data = [(len(re.findall(word_pattern, segment)), len(re.findall(punctuation_pattern, segment)), len(re.findall(bad_chars_pattern, segment)), len(re.findall(numbers_pattern, segment))) for segment in document.split("\n")]
     
     word_chars = [x[0] for x in condensed_data]

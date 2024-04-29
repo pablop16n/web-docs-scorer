@@ -20,13 +20,12 @@ args = docopt.docopt(__doc__, version='printbook v 1.0')
 
 
 ## _____ CHARS DETECTION _______________________________________________________________________________________________________________
-OCASIONAL_PUNCTUATION_CHARS = ["0023-0026", "0028-002B", "002F-002F", "003C-003E", "0040-0040", "005B-005F", "007B-007E", "00A2-00B3", "00B8-00BE", "00D7-00D7", "00F7-00F7", "02B0-0385", "0483-0489", "0559-055F", "2010-2E52", "10000-10FFFF", "A670-A67F"]
+BAD_CHARS = ["0023-0026", "002A-002B", "002F-002F", "003C-003E", "0040-0040", "005C-005C", "007C-007C", "007E-007E", "00A2-00B3", "00B8-00BE", "00D7-00D7", "00F7-00F7", "02B0-0385", "0483-0489", "0559-055F", "2010-2E52", "10000-1FFFF", "A670-A67F", "3200-33FF"]
 
-PUNCTUATION_CHARS = ["0021-0022", "0027-0027", "002C-002E", "003A-003B", "003F-003F", "0060-0060", "00A1-00A1", "00B4-00B5", "00B7-00B7", "00BF-00BF","0589-05C7", "0600-061F", "066A-066D", "06D4-06ED", "0700-070F", "1360-1368", "1800-180A", "1AB0-1AFF", "1C78-1C7F", "1CC0-1CC7", "1FBD-1FC1", "1FCD-1FCF", "1FDD-1FDF", "1FED-1FEF", "1FFD-2027", "3000-303F", "3200-33FF", "4DC0-4DFF", "A6F0-A6F7", "FE10-FE6F"]
+PUNCTUATION_CHARS = ["0021-0022", "0027-0029", "002C-002E", "003A-003B", "003F-003F", "005B-005B", "005D-005D", "0060-0060", "00A1-00A1", "00B4-00B5", "00B7-00B7", "00BF-00BF","0589-05C7", "0600-061F", "066A-066D", "06D4-06ED", "0700-070F", "1360-1368", "1800-180A", "1AB0-1AFF", "1C78-1C7F", "1CC0-1CC7", "1FBD-1FC1", "1FCD-1FCF", "1FDD-1FDF", "1FED-1FEF", "1FFD-2027", "3000-303F", "4DC0-4DFF", "A6F0-A6F7", "FE10-FE6F"]
 
 NUMBERS = ["0030-0039", "0660-0669", "06F0-06F9", "0964-096F", "09F2-09F9", "0B66-0B77", "0BE6-0BFA", "0C66-0C6F", "0C78-0C7E", "0CE6-0CEF", "0D66-0D79", "0DE6-0DEF", "0E50-0E5B", "0EC0-0ED9", "1040-1049", "1090-1099", "1369-137C", "17E0-17E9", "1810-1819", "19D0-19DA", "1A80-1A99", "1B50-1B59", "1C40-1C49", "1C50-1C59", "A830-A839", "A8D0-A8D9", "AA50-AA59"]
 SPACES = ["0000-0020", "007F-00A0", "2B7E-2B7E", "008A-008A", "0088-0088"]
-# Regex unicode codes for char-type count
 
 def join_utf_blocks(u_list, inverse=False):
     inversion = "^" if inverse else ""
@@ -39,9 +38,9 @@ def join_utf_blocks(u_list, inverse=False):
     return re.compile(f"{pattern}]")
     
 numbers_pattern = join_utf_blocks(NUMBERS)
-bad_chars_pattern = join_utf_blocks(OCASIONAL_PUNCTUATION_CHARS)
+bad_chars_pattern = join_utf_blocks(BAD_CHARS)
 punctuation_pattern = join_utf_blocks(PUNCTUATION_CHARS)
-alpha_pattern = join_utf_blocks(OCASIONAL_PUNCTUATION_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True)
+alpha_pattern = join_utf_blocks(BAD_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True)
 #alphabetic chars are considered by default
 spaces_pattern = join_utf_blocks(SPACES)
 
