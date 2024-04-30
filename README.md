@@ -2,7 +2,7 @@
 
 Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it's obtained by taking into account textual indicators and metadata. 
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a large portion of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 Quality Text Tagger requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
 
@@ -63,9 +63,7 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
 
 ### An example of the _quality_score_
 
-We show a practical example on how the **_quality_score_** is computed and its meaning for a document from the HPLT v1.2 Italian dataset. 
-
-This is an excerpt of a whole document from this dataset that can be found in `example/example1.jsonl`:
+In this section we show an example on how the **_quality_score_** is computed, and the meaning of its subscores. The document is extracted from the HPLT v1.2 Italian dataset, and can be found in `example/example1.jsonl`. An excerpt of the document is shown below:
 
 > [...]
 > 
@@ -93,22 +91,21 @@ From this document, we get these subscores:
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
-The document **_quality_score_** is computed using these subscores values as above explained:  
+As explained in the section above, the **_quality_score_** of the document is computed by using these subscores values:
 
-**basic score** = 9.9 x 0.8 + 0.4 + 1 = **9.32**
+**basic score** = (9.9 x 0.8) + 0.4 + 1 = **9.32**
 
 **penalty score** = 0.92 x 0.96 x ((1+1+1)/3) =  **0.88**
 
 **quality score** = 9.32 x 0,88 = **8.2** 
 
+This means that this document a good document (**_quality_score_** = 8.2/1) that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), but it only contains 4 long segments (_big_segments_score_ = 0.4/1).
 
-This means that we have a good document (**_quality_score_** = 8.2/10), undoubtedly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of linguistic data in one or two segments (_largest_segment_score_ = 1/1), but it only contains 4 long segments of a maximum of 10 (_big_segments_score_ = 0.4/1).
-
-The document does not contain url, punctuation or bad characters noise (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
+The document does not contain enough urls, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
 > [...] _Gennaio 2022 Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
-And it has a few repeated segments (_repeated_score_ = 0.96/1) of recurrent headers or titles:
+The document also has some repeated segments (_repeated_score_ = 0.96/1) caused by recurrent headers or titles:
 
 >[...] Grammatica, livello avanzato [...]
 > Grammatica, livello avanzato [...]
