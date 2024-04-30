@@ -5,11 +5,11 @@
       google.charts.load("current", {packages:["corechart"]});
       google.charts.setOnLoadCallback(drawColumnChart);
 
-      function cstm(qualificationScore, languageScore, urlgeScore, punctScore, badCharsScore, numbersScore, spamScore, nBigSegmentsScore, greatSegmentScore) {
+      function cstm(qualityScore, languageScore, urlgeScore, punctScore, badCharsScore, numbersScore, spamScore, nBigSegmentsScore, greatSegmentScore) {
           return '<div style="padding:5px;">' +
               '<table>' + '<tr>' +
               '<th style="border-bottom: solid 1px; padding-bottom: 5px; text-transform: uppercase;">Scores</th>' + '</tr>' + '<tr>' +
-              '<td  style="color:blue;text-align:center;"><b>Quality score: </b><span>' + qualificationScore + '</span></td>' + '</tr>' + '<tr>' +
+              '<td  style="color:blue;text-align:center;"><b>Quality score: </b><span>' + qualityScore + '</span></td>' + '</tr>' + '<tr>' +
               '<td><b>Language score: </b><span class="score">' + languageScore + '<span class="color" style="background-color: ' + colorLanguageScore(languageScore, 1, 10) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Big segments score: </b><span class="score">' + nBigSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nBigSegmentsScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Largest segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + 
@@ -63,7 +63,7 @@
 
       function drawColumnChart() {
         var options = {
-          title: 'Score of qualification',
+          title: 'Number of Documents / Quality Score',
           legend: { position: 'none' },
           colors: ['#FFA633'],
           tooltip: { isHtml: true }, // Habilitar tooltip con HTML
@@ -206,7 +206,8 @@
   <body>
     <div class="explanation">
       <ul>
-        <h3>Some information</h3>
+        <h2>Quality Score comparison between CulturaY and HPLT v1.2 clean</h2>
+        <h3>NOTES:</h3>
         <li><p>Data from HPLTv1.2 CLEAN are purely random samples</p></li>
         <li><p>CulturaY/Ontocord segments are all asigned a language_score of 10 (they lost correlation of segments and language detector labels). </p></li>
         <li><p> Documents of CulturaY/Ontocord are not fully random, they have been selected randomly from a random document of the Huggingface page, but all of the selected documents belong to the same jsonl.zst document, which may not be an accurate sample.</p></li>
