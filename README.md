@@ -41,19 +41,19 @@ The _quality_score_ takes the above described set of subscores and combines them
   * _big_segments_score_
   * _largest_segments_score_
 
-`basic_score`= `language_score * 0.8 + big_segments_score + largest_segments_score`
+`basic_score = language_score * 0.8 + big_segments_score + largest_segments_score`
 
 Note that the _language_score_ is weighted (since it scores from 0 to 10, while the other values score 0 to 1), so the maximum possible value of the _basic_score_ is 10.
 
 2. Then, we use the rest of the subscores (which represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_)) to compute a **_penalty_score_** by using the following formula:
 
-`penalty_score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
+`penalty_score = first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
 
 `first_minor_negative_subscore_value` and `second_minor_negative_subscore_value` are the two features with the lowest score.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
 3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**: 
 
-`quality score` = `basic score * penalty score`
+`quality score = basic score * penalty score`
 
 
 ### An example of the _quality_score_
