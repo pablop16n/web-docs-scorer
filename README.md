@@ -1,12 +1,12 @@
 # Quality text tagger
 
-Quality text tagger is an application that assigns a score on a 10-point scale to a document taking into account a few textual indicators and metadata. Its goal is to distinguish among good and bad documents and it has been developed to make this distinction for documents from crawled websites. 
+Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it's obtained by taking into account textual indicators and metadata. 
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or which show an excess of numbers, puctuation symbols, segment repetitions, etc.  
+Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
-The current implementation assumes that the document contains information about language identification at document and segment level, the content itself and segment boundaries which roughly correspond to paragraphs. 
+Quality Text Tagger requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
 
-It gets as input format the HPLT v2 jsonl datasets.
+
  
 ## How does the tagger work
 
