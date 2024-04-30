@@ -1,31 +1,34 @@
 # Quality text tagger
 
-Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it's obtained by taking into account textual indicators and metadata. 
+Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it's obtained by taking into account textual indicators and metadata. 
 
 Good documents (scores 5-10) are those mainly made of linguistic data, containing a big portion of running distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 Quality Text Tagger requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
 
 
+# Table of contents
+
+to do!
+
  
 ## How does the tagger work
 
-In order to assign a score (**_quality_score_**) to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
+In order to give a **_quality_score_** to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
-| language_score | mean of language probability (segments vs documents) | 0 - 10 | 
-| big_segments_score | presence of big text segments in content | 0 - 1 | 
+| language_score | ratio of characters in the correct language vs. total characters | 0 - 10 | 
+| big_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
 | largest_segments_score | length of largest text segments | 0 - 1 | 
-| urls_score | ratio of urls | 0 - 1 | 
-| numbers_score | ratio of [number characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) | 0 - 1 | 
-| punctuation_score | ratio of [punctuation characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) | 0 - 1 | 
-| bad_chars_score | ratio of [bad characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary): emojis, non word punctuation, separators, etc. | 0 - 1 | 
+| urls_score | ratio of urls vs. total segments | 0 - 1 | 
+| numbers_score | ratio of [numeric characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
+| punctuation_score | ratio of [punctuation characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
+| bad_chars_score | ratio of [bad characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
 | repeated_score | ratio of repeated segments | 0 - 1 | 
 
 A detailed description about these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
 
-The **_quality_score_** will be computed using these subscores. 
 
 ### Computing the _quality_score_
 
