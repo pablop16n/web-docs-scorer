@@ -9,7 +9,7 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
 
 # Table of contents
 
-to do!
+**to do!**
 
  
 ## How does the tagger work
@@ -34,19 +34,24 @@ A detailed description about these subscores is given in section [Computing subs
 
 processed with: `crawled_text_qualifier.valorate_text()`
 
-The _quality_score_ takes the above described set of subscores and uses them as follows:
+The _quality_score_ takes the above described set of subscores and combines them as follows:
 
-1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: the _language_score_ to which we give a weigth of 80% (`language_score * 0.8`), the _big_segments_score_ and the _largest_segments_score_.
+1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: 
+  * _language_score_ 
+  * _big_segments_score_
+  * _largest_segments_score_
 
 `basic_score`= `language_score * 0.8 + big_segments_score + largest_segments_score`
 
-2. Then, we use the rest of the subscores which represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_) to compute a **_penalty_score_** using the following formula:
+Note that the _language_score_ is weighted (since it scores from 0 to 10, while the other values score 0 to 1), so the maximum possible value of the _basic_score_ is 10.
+
+2. Then, we use the rest of the subscores (which represent negative aspects of the document content (_urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_, _repeated_score_)) to compute a **_penalty_score_** by using the following formula:
 
 `penalty_score` = `first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
+`first_minor_negative_subscore_value` and `second_minor_negative_subscore_value` are the two features with the lowest score.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
-3. Finally, we get the **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**: 
+3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**: 
 
 `quality score` = `basic score * penalty score`
 
