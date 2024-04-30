@@ -111,9 +111,9 @@ The document also has some repeated segments (_repeated_score_ = 0.96/1) caused 
 > Grammatica, livello avanzato [...]
 
 
-### Another example of the quality_score
+### Another example of the _quality_score_
 
-The following excerpt belongs to the file `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset which got a **quality_score** of 1.5:
+The following excerpt belongs to the file `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset. The document got a **quality_score** of 1.5:
 
 > [...]
 >  
@@ -146,14 +146,14 @@ We compute the subscores:
 | numbers_score | 0.56 |
 | repeated_score | 1 |
 
-This text seems to be made of mainly short sentences (note the very low values for _big_segments_score_ and _largest_segments_score_) and even from some mix of languages according to the language identifier. This makes the basic score already a low one: 
+This text seems to be mostly made of short segments (note the very low values for _big_segments_score_ and _largest_segments_score_) and, according to the language identifier, with a part of the segments not in the document language. Because of this, the basic score is already low: 
 
 |basic score| Result |
 |---|---|
 |8 * 0.8 + 0.1 + 0| 6.5 |
 
 
-The document does not seem to have bad punctuation, or characters and it does not contain repeated sentences, but it has an excess of numbers and urls. This impacts highly the _penalty_score_ value:
+The document does not seem to have bad punctuation or bad characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and urls. This has a high impact on the _penalty_score_ value:
 
 |penalty score| Result |
 |---|---|
@@ -165,7 +165,7 @@ Thus, the final _quality_score_ is also very low:
 |---|---|
 | 6.5 * 0.24| 1.5 |
 
-This document is considere an undesirable document. 
+This document is considered an undesirable document. 
 
 ## Usage
 
