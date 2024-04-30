@@ -226,7 +226,7 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 processed with: `crawled_text_qualifier.valorate_lang()`
 
-The _language_score_ gets a value from 0 to 10 linked to the amount of segments in the correct language inside a document. It uses the information about language at segment and document level provided as metadata in the input files. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use word characters to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
+The _language_score_ gets a value from 0 to 10 linked to the amount of segments in the correct language inside a document. It uses the information about language at segment and document level provided as metadata in the input files. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use [word characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
 
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
