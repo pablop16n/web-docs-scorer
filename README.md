@@ -9,7 +9,7 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
 
 # Table of contents
 
-**to do!**
+**[MBG]to do!**
 
  
 ## How does the tagger work
@@ -32,9 +32,7 @@ A detailed description about these subscores is given in section [Computing subs
 
 ### Computing the _quality_score_
 
-processed with: `crawled_text_qualifier.valorate_text()`
-
-The _quality_score_ takes the above described set of subscores and combines them as follows:
+The  _quality_score_ is processed with `crawled_text_qualifier.valorate_text()`. It combines the aforementioned set of subscores as follows:
 
 1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: 
   * _language_score_ 
@@ -52,9 +50,9 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
   * _bad_chars_score_
   * _repeated_score_
 
-`penalty_score = first_minor_negative_subscore_value * second_minor_negative_subscore_value * average (remaining_negative_subscores_values) `
+`penalty_score = first_lowest_negative_subscore_value * second_lowest_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-`first_minor_negative_subscore_value` and `second_minor_negative_subscore_value` are the two features with the lowest score.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
+`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
 3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**: 
 
@@ -100,6 +98,7 @@ As explained in the section above, the **_quality_score_** of the document is co
 **quality score** = 9.32 x 0,88 = **8.2** 
 
 This means that this document a good document (**_quality_score_** = 8.2/1) that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), but it only contains 4 long segments (_big_segments_score_ = 0.4/1).
+[MBG] Plz explain a bit more what " contains a considerable amount of textual data in some segments" means. 
 
 The document does not contain enough urls, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -165,9 +164,12 @@ Thus, the final _quality_score_ is also very low:
 |---|---|
 | 6.5 * 0.24| 1.5 |
 
-This document is considered an undesirable document. 
+With such a low quality score, this document can be considered an undesirable document. 
 
 ## Usage
+
+[MBG] Please give this section a format in the fashion of  https://github.com/bitextor/bicleaner?tab=readme-ov-file#parameters-1
+(schematic + description + example)
 
 #### crawled_text_qualifier.py (main script)
 
@@ -203,18 +205,22 @@ Output
 
 ## Computing the _penalty_score_
 
-processed with: `crawled_text_qualifier.custom_mean()`
+[MBG] Consider changing the name from "penalty score" to "booster", since it is actually multiplied by the first score instead of substracted from it (I got confused by the name)
 
-The subscores used to compute the **_penalty_score_** are: _urls_score_, _numbers_score_, _punctuation_score_, _bad_chars_score_ and _repeated_score_.
+The _penalty_score_  is obtained with `crawled_text_qualifier.custom_mean()` . The subscores used to compute the **_penalty_score_** are those that represent the negative aspects of the document:
+  *  _urls_score_
+  * _numbers_score_
+  * _punctuation_score_
+  * _bad_chars_score_
+  * _repeated_score_
 
-These subscores represent negative aspects of the document content. They range on a scale from 0 to 1, where 1 means that no penalization should be applied. Bellow 1, 0.8 will have an important effect in the final score and less than 0.5 will penalize it severely. A 0 value in any of these scores thus means that the resulting value will be 0 in any case.
+The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final quality score of 0) to 1 (no penalization is applied).
 
+To compute the _penalty_score_, the two lowest values from the aforementioned subsscores are multiplied by the average of the rest of values:
 
-To compute the _penalty_score_, the two lowest values from the above mentioned subsscores are multiplied by the average of the rest of values:
+`first_lowest_value * second_lowest_value * average(other_values)`
 
-`first_minor_value * second_minor_value * average(other_values)`
-
-We prefer this solution to a simple average because the aim of these scores is to advertise about documents that stand out of the desidered ratios. A classical average would overshadow low values, which are the most precious to our goal, and a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
+We prefer this solution to a simple average because the aim of these scores is to warn about documents that stand out of the desired ratios: a simple average would overshadow low values (which are the most valuable to our goal), while a simple multiplication of all scores would make it hard to work with more than 4 or 5 penalty variables.
 
 
 ## Computing subscores
