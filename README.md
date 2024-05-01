@@ -21,7 +21,7 @@ In order to give a **_quality_score_** to a document, the quality text tagger co
 | language_score | ratio of characters in the correct language vs. total characters | 0 - 10 | 
 | big_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
 | largest_segments_score | length of largest text segments | 0 - 1 | 
-| urls_score | ratio of urls vs. total segments | 0 - 1 | 
+| urls_score | ratio of URLs vs. total segments | 0 - 1 | 
 | numbers_score | ratio of [numeric characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
 | punctuation_score | ratio of [punctuation characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
 | bad_chars_score | ratio of [bad characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
@@ -100,7 +100,7 @@ As explained in the section above, the **_quality_score_** of the document is co
 This means that this document a good document (**_quality_score_** = 8.2/1) that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), but it only contains 4 long segments (_big_segments_score_ = 0.4/1).
 [MBG] Plz explain a bit more what " contains a considerable amount of textual data in some segments" means. 
 
-The document does not contain enough urls, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
+The document does not contain enough URLs, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
 > [...] _Gennaio 2022 Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
@@ -152,8 +152,8 @@ This text seems to be mostly made of short segments (note the very low values fo
 |8 * 0.8 + 0.1 + 0| 6.5 |
 
 
-The document does not seem to have bad punctuation or bad characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and urls. This has a high impact on the _penalty_score_ value:
-
+The document does not seem to have bad punctuation or bad characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and URLs. This has a high impact on the _penalty_score_ value:
+U
 |penalty score| Result |
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
@@ -227,53 +227,49 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 ### language_score
 
-processed with: `crawled_text_qualifier.valorate_lang()`
-
-The _language_score_ gets a value from 0 to 10 linked to the amount of segments in the correct language inside a document. It uses the information about language at segment and document level provided as metadata in the input files. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. We use [word characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) to obtain a proportion of correct and incorrect characters in the document and to provide a score as follows:
-
+The _language_score_ is processed with `crawled_text_qualifier.valorate_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
-This score is not sensitive to short segments, which very frequently correspond to header or footer menus, social media listing, partners listing, etc. These strings are troublesome for language identifiers as they are usually classified as English or other random language. For this reason, segments with _n_ or less word characters are ignored in this processing. The _n_ value is different according every language. For example, 25 is considered the minimum number of characters for Spanish segments.
+Segments below a certain length threshold are not taken into account to this metric, so this score is not sensitive to short segments (which often  to header or footer menus, social media listings, partners listings, etc.) These strings are troublesome for language identifiers as they are usually classified as English or other random language. The length threshold is different for each language. For example, 25 is considered the minimum acceptable number of characters for taking Spanish segments into account for this metric.
 
 ### big_segments_score and largest_segments_score
 
-processed with: `crawled_text_qualifier.valorate_big_texts()`
+These two metrics are obtained with `crawled_text_qualifier.valorate_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
-These two scores get values between 0 and 1 that aim to determine the presence of big groups of word characters in the correct language.
+Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#adaptating-subscores-to-different-languages) section.
+[MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents.
 
-For the _big_segments_score_, a document will receive a 0.1 score point for every big segment up to a maximum score of 1. The length of what we consider a 'big segment' depends on each language and is measured using word characters. In Spanish, we set the minimum number of word characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#adaptating-subscores-to-different-languages) section.
-
-On the other hand, the _largest_segments_score_, is used to measure if documents contain at least one very big segment. The lenght of what we consider a 'very big segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 word characters as a point of reference for our minimum an maximum numbers. Depending on lenght, we assign a value from 0 to 1. If a segment of 1000 word characters (or more) is found in a Spanish document it will receive a 1 score and if a document only contains segments with 625 or less word characters the resultant _largest_segments_score_ will be 0. If there is more than one of these segments, we use an average of them.
+On the other hand, the _largest_segments_score_ is used to measure whether a document contains at least one very large segment. The lenght of what we consider a 'very large segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _largest_segments_score_ will be 0. If there is more than one of these segments (between both thresholds), we use an average of them.
+[MBG] An example of the latter case, plz? You average them but how? the average of lenghts? And then it gets mapped to a value between 0 to 1? 
 
 ### urls_score
 
-processed with: `crawled_text_qualifier.valorate_urls()`
-
-To obtain this score, we look for the number of urls in a document. In particular, we look for "www" or "http" strings in the whole text. We search the ratio between the number of urls and the number of segments in the text. We ignore short segments, as for the _language_score_. The _urls_score_ is language independent and is computed as follows:
+This score is processed with `crawled_text_qualifier.valorate_urls()`, by looking at the amount of URLs in a document. In particular, we count the amount of "www" or "http" strings in the whole text, and then we get the ratio between the number of URLs and the total amount of segments. We ignore short segments, as for the _language_score_.
+The _urls_score_ is language independent, and its value is not lineal. We first get the percentage of URLs per 100 segments:
 
 `number_of_urls / number_of_segments * 100`
 
-Documents with 5 or less urls each 100 segments is set as the upper ratio threshold, penalization is applied when more than 5 url are present as follows:
+Then, a final _urls_score_ is assigned to the document, depending on the percentage of URLs. Documents having more than a 5% of URLs are non-lineally penalized as follows:
 
-| Url score  |    Ratio      |
+| URL score  |    Ratio      |
 |---|---|
 | 1 | <5 |
 | 1 → 0.5 | 5 → 30 |
 | 0.5 → 0 | 30 → 100 |
 | 0 | >100 |
 
+[MBG] The distribution is lineal in each step?
+
 ### numbers_score
 
-processed with: `crawled_text_qualifier.valorate_numbers()`
+This metric is processed with `crawled_text_qualifier.valorate_numbers()`, and it's used to determine whether there is a high number of numeric characters in a document. It is computed by getting the percentage of numeric characters compared to alphabetic characters:
 
-This score is used to determine if there is a high number of numeric characters in a document. It is computed by comparing the ratio of numbers and word characters:
+`numeric_characters / alphabetic_characters * 100`
 
-`numbers_characters / word_characters * 100`
+This metric and its thresholds are non-lineal and language-dependent. In Spanish, for example, we assign scores as follows:
 
-The ratio threshold and its matching score depends on every language. In Spanish, for example, we assign scores as follows:
-
-| Number score  |    Ratio      |
+| Number score  |    Percentage      |
 |---|---|
 | 1 | <1 |
 | 1 → 0.7 | 1 → 10 |
@@ -281,17 +277,17 @@ The ratio threshold and its matching score depends on every language. In Spanish
 | 0.5 → 0 | 15 → 30 |
 | 0 | >30 |
 
+[MBG]  Same question as above.
+
 ### punctuation_score
 
-processed with: `crawled_text_qualifier.valorate_punctuation()`
+The _punctuation_score_ is processed with `crawled_text_qualifier.valorate_punctuation()`. This score is used to penalize texts with too much or too little amount of punctuation characters. The percentage of punctuation characters is calculed this way:
 
-This score is used to penalize texts with too much or too little amount of punctuation. The ratio is calculed this way:
+`punctuation_characters / alphabetic_characters * 100`
 
-`punctuation_characters / word_characters * 100`
+Again, this metric and its threshold are non-linal and  language-dependent. In Spanish, for example, we give scores according to the following percentages of punctuation characters:
 
-The threshold for this ratio and its matching scoring is language-dependent. In Spanish we give the next scores to the following ratios:
-
-| Punctuation score  |    Ratio      |
+| Punctuation score  |    Percentage      |
 |---|---|
 | 1 | 0.9% → 2.5% |
 | __Too much__  | |
@@ -304,20 +300,17 @@ The threshold for this ratio and its matching scoring is language-dependent. In 
 | 0.5 → 0 | 0.5% → 0.3% |
 | 0 | <0.3% |
 
-Not only too much punctuation is problematic, but also too few, usually leading to documents that contain a list of products, tags, SEO phrases, etc.
+Note that not only too much punctuation is problematic, but also too few, usually caused by documents that consist of product lists, tags, SEO phrases, etc.
 
 ### bad_chars_score
 
-processed with: `crawled_text_qualifier.valorate_bad_chars()`
+This subscores is processed with `crawled_text_qualifier.valorate_bad_chars()`, and it's used to penalize texts with undesired characters (such as emojis, separators, ...):
 
-The _bad_chars_score_ is used to penalize texts with undesired characters:
+`bad_characters / alphabetic_characters * 100`
 
-`bad_characters / word_characters * 100`
+This score and its thresholds are non-lineal and language-dependent. In Spanish, for example, the score distribution is as follows:
 
-
-The threshold for this ratio and its matching scoring is language-dependent. In Spanish we give the next scores to the following ratios:
-
-| Bad chars score  |    Ratio      |
+| Bad chars score  |    Percentage      |
 |---|---|
 | 1 | <1% |
 | 1 → 0.7 | 1% → 2% |
@@ -327,9 +320,7 @@ The threshold for this ratio and its matching scoring is language-dependent. In 
 
 ### repeated segments (repeated_score)
 
-processed with: `crawled_text_qualifier.valorate_repeated()`
-
-This score computes the proportion of repeated segments. Short segments are ignored using the same logic as the for language score processing. For example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will recieve a 0 score. 
+The _repeated_score_ score is processed with `crawled_text_qualifier.valorate_repeated()`, and it computes the ratio of repeated segments. Using the same rationale as for the _language_score_ processing, short segments are not taken into account for this metric.  The score follows an inverse function of the amount of repeated segments: for example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will receive a 0 score. 
 
 ## Adaptating subscores to different languages 
 
