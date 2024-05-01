@@ -324,31 +324,38 @@ The _repeated_score_ score is processed with `crawled_text_qualifier.valorate_re
 
 ## Adaptating subscores to different languages 
 
-processed with: `language_adaptation.extract_ratios()`, `crawled_text_qualifier`
+This gets processed in `language_adaptation.extract_ratios()`and `crawled_text_qualifier`.
 
-Some of the subscores used to get the _quality_score_ are based on ratios that need to be computed for each language for optimal performance. These are: _punctuation_score_, _bad_chars_score_, _numbers_score_, _big_segments_score_, _largest_segments_score_ and 'short segments' that are ignored in several processing.
+Some of the subscores used to get the _quality_score_ are based on ratios that need to be computed for each language for optimal performance:
+  * _punctuation_score_
+  * _bad_chars_score_
+  * _numbers_score_
+  * _big_segments_score_
+  * _largest_segments_score_ 
+Also the 'short segments' threshold, indicating the minimum amount of characters that a segment must have in order to being taken into account, is language-dependent.
 
+In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaptation method is needed for other languages.
 
-In our experiments, as a first approach, we stablished the desidered ratios for each indicator in Spanish, using a sample  from HPLT v1.2. These ratios will be valid only for this language, so an adaptation method is needed.
+In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we selected the 50% best language-scored documents ([MBG] Those with most segments in the document language? Plz specify.) and computed ratios for the punctuation, bad characters and numbers subscores. The median for each subscore was computed with `language_adaptation/extract_ratios.py` (GEMA: review this) and then stored in `language_adaptation/medians_language.csv`.Finally, medians are used in the main script (`crawled_text_qualifier.py`) in order to create equivalences between ratios and scores. (GEMA: and this)
 
-To adapt the values to other languages we used the scores and the labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we select the 50% best language-scored documents and compute ratios for the punctuation, bad characters and numbers subscores. Medians for each subscore are computed and stored in `language_adaptation/medians_language.csv` using the script `language_adaptation/extract_ratios.py`. (GEMA: review this). Medians are is used in the main script (`crawled_text_qualifier.py`) to create equivalences between ratio and scores. (GEMA: and this)
-
-
-The application of the Spanish ratios-score logic to other languages which differ considerably from it, as shown in the following histograms, produces innacurate _quality_scores_ in Korean which penalize undesirably documents that look good:
+Applying the Spanish ratios-score logic to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized:
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
 
-To solve this problem we decided to use medians as a point of reference to set more accurate score ranges. In this case, Korean has a median of 7.3 and Spanish 2.4. We use this information to make a cross-multiplication so we get a new and adapted score-ratio relation:
+[MBG] I'd need to have the info on which were the thresholds in Spanish, so I can understand what gets (wrongly) discarded in Korean. Is it the median?
 
+Aiming at solving this problem, we decided to use medians as a point of reference to more accurately set score ranges. In the example above, Korean has a median of 7.3 in the punctuation score, while Spanish has a median of 2.4. We used this information to make a cross-multiplication in order to get a new and adapted score-ratio relation:
+
+[MBG] I replaced all the mentions to "word characters" to "alphabetic characters", because the other is confusing. If possible, plz change it in the histograms.
 
 ![alt text](example/korean_adapted.png)
 
-Using another example, the median of both Russian and Spanish for bad chars, is the same (0.8), so no adjustments are needed. However, for regular punctuation the median is different: 3.2 for Russian and 2.4 in Spanish. In this case adjustments are needed. The main script uses again, a cross-multiplication to solve this. If we take the 0.9 ratio which in Spanish is considered a 1/1 score, this means that Russian needs a 1.2 ratio to get a 1/1 socre in the _punctuation_score_:
-
+Using another example, the median of both Russian and Spanish for bad chararcters is the same (0.8), so no adjustments are needed. However, for regular punctuation, ([MBG] What is "regular punctuation"? Has it been mentioned before?) the median is different: 3.2 for Russian and 2.4 in Spanish. In this case, adjustments are indeed needed. The main script uses, again, a cross-multiplication to solve this and set more appropiate values for Russian. If we use the 0.9 ratio (which in Spanish is considered a 1/1 score), it means that Russian needs a 1.2 ratio to get a 1/1 score in the _punctuation_score_:
+[MBG] I don't think I get it?
 `(3.2 * 0.9) / 2.4 = 1.2`
 
-Consequently, the adapted table for Russian concerning the _punctuation_score_ is as follows:
+As a result, the adapted table for Russian regarding the _punctuation_score_ is as follows:
 
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
@@ -364,11 +371,11 @@ Consequently, the adapted table for Russian concerning the _punctuation_score_ i
 | 0 | <0.3 | <0.4 |
 
 
-Not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_), also some absolute values need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments', which are ignored to compute some scores. For example, in Spanish we use 1000 word characters as a reference for _largest_segments_score_ with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters is enough according to the inverse cross-multiplication:
+Note that not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_): some absolute values do also  need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments' (the length threshold used to ignore short segments when computing some of the scores). For example, in Spanish we use 1000 alphabetic characters as a threshold for _largest_segments_score_,  with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters are enough, according to the inverse cross-multiplication:
 
 `2.4 * 1000 / 6.5`
 
-The relationship between punctuation and word characters is inversely proportional: as the number of punctuation symbols per word characters increases, the average number of word characters decreases. (GEMA: revisar esto. )
+The relationship between punctuation and alphabetic characters is inversely proportional: as the number of punctuation symbols per alphabetic characters increases, the average number of alphabetic characters decreases. (GEMA: revisar esto. ) [MBG] I am not sure I am understanding it.
 
 ## Glossary
 - _document_: whole text of a crawled website
@@ -377,9 +384,9 @@ The relationship between punctuation and word characters is inversely proportion
 
 | Name  |  Meaning   |  utf-8 ranges   |
 |---|---|---|
-|number character|Numbers in many languages|0030-0039, 0660-0669, 06F0-06F9, 0964-096F, 09F2-09F9, 0B66-0B77, 0BE6-0BFA, 0C66-0C6F, 0C78-0C7E, 0CE6-0CEF, 0D66-0D79, 0DE6-0DEF, 0E50-0E5B, 0EC0-0ED9, 1040-1049, 1090-1099, 1369-137C, 17E0-17E9, 1810-1819, 19D0-19DA, 1A80-1A99, 1B50-1B59, 1C40-1C49, 1C50-1C59, A830-A839, A8D0-A8D9, AA50-AA59|
+|numeric character|Numbers in many languages|0030-0039, 0660-0669, 06F0-06F9, 0964-096F, 09F2-09F9, 0B66-0B77, 0BE6-0BFA, 0C66-0C6F, 0C78-0C7E, 0CE6-0CEF, 0D66-0D79, 0DE6-0DEF, 0E50-0E5B, 0EC0-0ED9, 1040-1049, 1090-1099, 1369-137C, 17E0-17E9, 1810-1819, 19D0-19DA, 1A80-1A99, 1B50-1B59, 1C40-1C49, 1C50-1C59, A830-A839, A8D0-A8D9, AA50-AA59|
 |punctuation character|Most frequent linguistic punctuation|0021-0022, 0027-0029, 002C-002E, 003A-003B, 003F, 005B, 005D, 0060, 00A1, 00B4-00B5, 00B7, 00BF,0589-05C7, 0600-061F, 066A-066D, 06D4-06ED, 0700-070F, 1360-1368, 1800-180A, 1AB0-1AFF, 1C78-1C7F, 1CC0-1CC7, 1FBD-1FC1, 1FCD-1FCF, 1FDD-1FDF, 1FED-1FEF, 1FFD-2027, 3000-303F, 4DC0-4DFF, A6F0-A6F7, FE10-FE6F|
 |bad character|Non typical linguistic punctuation, emojis, separators, etc.|0023-0026, 002A-002B, 002F, 003C-003E, 0040, 005C, 007C, 007E, 00A2-00B3, 00B8-00BE, 00D7, 00F7, 02B0-0385, 0483-0489, 0559-055F, 2010-2E52, 10000-1FFFF, A670-A67F, 3200-33FF|
 |space character|White spaces, tabulations, new lines, etc.|0000-0020, 007F-00A0, 2B7E, 008A, 0088|
-|word character|Characters that are used to create lexical units or words| Any character not in the other groups |
+|alphabetic character|Characters that are used to create lexical units or words| Any character not in the other groups |
 
