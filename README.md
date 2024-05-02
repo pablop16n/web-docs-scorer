@@ -1,6 +1,6 @@
 # Quality text tagger
 
-Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it's obtained by taking into account textual indicators and metadata. 
+Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata. 
 
 Good documents (scores 5-10) are those mainly made of linguistic data, containing a large portion of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
@@ -9,7 +9,25 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
 
 # Table of contents
 
-**[MBG]to do!**
+1. [How does the tagger work](https://gitlab.prompsit.com/hplt/quality-text-tagger#how-does-the-tagger-work)
+    1. [Computing the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-the-quality_score)
+    2. [An example of the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#an-example-of-the-quality_score)
+    3. [Another example of the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#another-example-of-the-quality_score)
+2. [Usage](https://gitlab.prompsit.com/hplt/quality-text-tagger#usage)
+    1. [crawled_text_qualifier.py (main script)](https://gitlab.prompsit.com/hplt/quality-text-tagger#crawled_text_qualifierpy-main-script)
+    2. [quality_score_charts.py](https://gitlab.prompsit.com/hplt/quality-text-tagger#quality_score_chartspy)
+    3. [language_adaptation/extract_ratios.py](https://gitlab.prompsit.com/hplt/quality-text-tagger#language_adaptationextract_ratiospy)
+3. [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-the-penalty_score)
+4. [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-subscores)
+    1. [language_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#language_score)
+    2. [big_segments_score and largest_segments_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#big_segments_score-and-largest_segments_score)
+    3. [urls_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#urls_score)
+    4. [numbers_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#numbers_score)
+    5. [punctuation_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#punctuation_score)
+    6. [bad_chars_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#bad_chars_score)
+    7. [repeated_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#repeated-segments-repeated_score)
+5. [Adaptating subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger#adaptating-subscores-to-different-languages)
+6. [Glossary](https://gitlab.prompsit.com/hplt/quality-text-tagger#glossary)
 
  
 ## How does the tagger work
@@ -18,7 +36,7 @@ In order to give a **_quality_score_** to a document, the quality text tagger co
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
-| language_score | ratio of characters in the correct language vs. total characters | 0 - 10 | 
+| language_score | ratio of [alphabetic characters](https://gitlab.prompsit.com/hplt/quality-text-tagger#glossary) in the correct language vs. total characters | 0 - 10 | 
 | big_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
 | largest_segments_score | length of largest text segments | 0 - 1 | 
 | urls_score | ratio of URLs vs. total segments | 0 - 1 | 
@@ -52,9 +70,9 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
 
 `penalty_score = first_lowest_negative_subscore_value * second_lowest_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
+`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values. Thus, a 0 value in any of the negative scores will suppose a 0 score in the final _quality_score_ regardless the other scores.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
 
-3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**: 
+3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**. Note that _penalty_score_ is always 0-1:
 
 `quality score = basic score * penalty score`
 
@@ -97,8 +115,7 @@ As explained in the section above, the **_quality_score_** of the document is co
 
 **quality score** = 9.32 x 0,88 = **8.2** 
 
-This means that this document a good document (**_quality_score_** = 8.2/1) that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), but it only contains 4 long segments (_big_segments_score_ = 0.4/1).
-[MBG] Plz explain a bit more what " contains a considerable amount of textual data in some segments" means. 
+This means that the previous example is a good document (**_quality_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#big_segments_score-and-largest_segments_score) and [Adaptating subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger#adaptating-subscores-to-different-languages) sections.
 
 The document does not contain enough URLs, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -112,7 +129,7 @@ The document also has some repeated segments (_repeated_score_ = 0.96/1) caused 
 
 ### Another example of the _quality_score_
 
-The following excerpt belongs to the file `example/example2.txt`, a Chinese document from the HPLT v1.2 dataset. The document got a **quality_score** of 1.5:
+The following excerpt belongs to the file `example/example2.txt`, a bad scored Chinese document from the HPLT v1.2 dataset. The document got a **_quality_score_** of 1.5:
 
 > [...]
 >  
@@ -153,7 +170,7 @@ This text seems to be mostly made of short segments (note the very low values fo
 
 
 The document does not seem to have bad punctuation or bad characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and URLs. This has a high impact on the _penalty_score_ value:
-U
+
 |penalty score| Result |
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
@@ -168,44 +185,69 @@ With such a low quality score, this document can be considered an undesirable do
 
 ## Usage
 
-[MBG] Please give this section a format in the fashion of  https://github.com/bitextor/bicleaner?tab=readme-ov-file#parameters-1
-(schematic + description + example)
 
-#### crawled_text_qualifier.py (main script)
+### crawled_text_qualifier.py
 
-Parameters 
-- **--input** directory with jsonl files provided by the language identifier
-- **--output:** existing directory
+The main script, it will create a csv for each jsonl present in the input directory. The input jsonl files must contain the next columns:
+- `id`: identifier of the document, must be unique.
+- `document_lang`: language label of the whole document.
+- `scores`: list of language probability scores from the language identifier.
+- `langs`: list of language labels for each segment of the document.
+- `text`: text of the document. Segments must be separated by _\n_.
 
-Output
-- will create one csv for each jsonl file.
-- columns: quality_score, language_score, url_score, punctuation_score, bad_chars_score, numbers_score, repeated_score,n_big_segments_score, great_segment_score
+The output csvs will contain the next columns. The final score will always be considered the _quality_score_:
+- quality_score
+- language_score
+- url_score
+- punctuation_score
+- bad_chars_score
+- numbers_score
+- repeated_score
+- n_big_segments_score
+- great_segment_score
 
-Requisites
+#### Parameters
+- ```input```: directory with jsonl files provided by the language identifier
+- ```output```: existing directory
+- ```config```: path of the `medians_language.csv` document
 
-- document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` with samples of data
+#### Example
 
-#### quality_score_charts.py
+```python3 crawled_text_qualifier.py --input=input_dir --output=output_dir --config=language_adaptation/medians_language.csv ```
 
-Parameters 
-- **--input** directory with csv files created by `crawled_text_qualifier.py`
-- **--output:** existing directory
 
-Output
-- HTML document with histograms about all languages present in the input
+#### Requirements
+The document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` is needed. It can be used the csv present by default in the repository or it can be created with custom data. These data is used as a model to undestand the differences between languages, so in a custom approach the text data used must be representative, diverse and comparable.
+
+### quality_score_charts.py
+
+Script that creates a HTML document with one histogram for every csv document in the input.
+
+#### Parameters 
+- ```input```: directory with the csvs obtained with `crawled_text_qualifier.py`
+- ```output```: existing directory
+
+#### Example
+
+```python3 quality_score_charts.py --input=input_dir --output=output_dir ```
+
+#### Requirements
+
+It is needed a directory with the `crawled_text_qualifier.py` output.
 
 #### language_adaptation/extract_ratios.py
 
-- **--input** directory with jsonl files with HPLT 1.2v like structure of key and values
-- **--output:** existing directory
+This script extracts the median ratios of numbers, punctuation and bad characters which are used to process the language adaptation from a sample of documents. The input data must consists in a jsonl file for every language with the structure of HPLT 1.2v. The selected data must be representative, diverse and comparable.
 
-Output
-- CSV that contains the medians of numbers, punctuation and bad characters ratios in every language present in the directory
+#### Parameters 
+- ```input```: directory with jsonl files they must have the HPLT 1.2v like structure regarding keys and values.
+- ```output```: existing directory
 
+#### Example
+
+```python3 extract_ratios.py --input=input_dir --output=output_dir ```
 
 ## Computing the _penalty_score_
-
-[MBG] Consider changing the name from "penalty score" to "booster", since it is actually multiplied by the first score instead of substracted from it (I got confused by the name)
 
 The _penalty_score_  is obtained with `crawled_text_qualifier.custom_mean()` . The subscores used to compute the **_penalty_score_** are those that represent the negative aspects of the document:
   *  _urls_score_
@@ -214,7 +256,7 @@ The _penalty_score_  is obtained with `crawled_text_qualifier.custom_mean()` . T
   * _bad_chars_score_
   * _repeated_score_
 
-The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final quality score of 0) to 1 (no penalization is applied).
+The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final _quality_score_ of 0) to 1 (no penalization is applied).
 
 To compute the _penalty_score_, the two lowest values from the aforementioned subsscores are multiplied by the average of the rest of values:
 
@@ -238,10 +280,9 @@ Segments below a certain length threshold are not taken into account to this met
 These two metrics are obtained with `crawled_text_qualifier.valorate_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
 Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#adaptating-subscores-to-different-languages) section.
-[MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents.
+<!-- [MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents. -->
 
-On the other hand, the _largest_segments_score_ is used to measure whether a document contains at least one very large segment. The lenght of what we consider a 'very large segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _largest_segments_score_ will be 0. If there is more than one of these segments (between both thresholds), we use an average of them.
-[MBG] An example of the latter case, plz? You average them but how? the average of lenghts? And then it gets mapped to a value between 0 to 1? 
+On the other hand, the _largest_segments_score_ is used to measure whether a document contains at least one very large segment. The lenght of what we consider a 'very large segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _largest_segments_score_ will be 0. If there is more than one of these segments (inside both thresholds), we use an average of their lengths to calculate the value.
 
 ### urls_score
 
@@ -250,7 +291,7 @@ The _urls_score_ is language independent, and its value is not lineal. We first 
 
 `number_of_urls / number_of_segments * 100`
 
-Then, a final _urls_score_ is assigned to the document, depending on the percentage of URLs. Documents having more than a 5% of URLs are non-lineally penalized as follows:
+Then, a final _urls_score_ is assigned to the document, depending on the percentage of URLs. Documents having more than a 5% of URLs are lineally penalized as follows:
 
 | URL score  |    Ratio      |
 |---|---|
@@ -259,15 +300,13 @@ Then, a final _urls_score_ is assigned to the document, depending on the percent
 | 0.5 → 0 | 30 → 100 |
 | 0 | >100 |
 
-[MBG] The distribution is lineal in each step?
-
 ### numbers_score
 
 This metric is processed with `crawled_text_qualifier.valorate_numbers()`, and it's used to determine whether there is a high number of numeric characters in a document. It is computed by getting the percentage of numeric characters compared to alphabetic characters:
 
 `numeric_characters / alphabetic_characters * 100`
 
-This metric and its thresholds are non-lineal and language-dependent. In Spanish, for example, we assign scores as follows:
+This metric and its thresholds are lineal and language-dependent. In Spanish, for example, we assign scores as follows:
 
 | Number score  |    Percentage      |
 |---|---|
@@ -277,15 +316,13 @@ This metric and its thresholds are non-lineal and language-dependent. In Spanish
 | 0.5 → 0 | 15 → 30 |
 | 0 | >30 |
 
-[MBG]  Same question as above.
-
 ### punctuation_score
 
 The _punctuation_score_ is processed with `crawled_text_qualifier.valorate_punctuation()`. This score is used to penalize texts with too much or too little amount of punctuation characters. The percentage of punctuation characters is calculed this way:
 
 `punctuation_characters / alphabetic_characters * 100`
 
-Again, this metric and its threshold are non-linal and  language-dependent. In Spanish, for example, we give scores according to the following percentages of punctuation characters:
+Again, this metric and its threshold are lineal and  language-dependent. In Spanish, for example, we give scores according to the following percentages of punctuation characters:
 
 | Punctuation score  |    Percentage      |
 |---|---|
@@ -308,7 +345,7 @@ This subscores is processed with `crawled_text_qualifier.valorate_bad_chars()`, 
 
 `bad_characters / alphabetic_characters * 100`
 
-This score and its thresholds are non-lineal and language-dependent. In Spanish, for example, the score distribution is as follows:
+This score and its thresholds are lineal and language-dependent. In Spanish, for example, the score distribution is as follows:
 
 | Bad chars score  |    Percentage      |
 |---|---|
@@ -336,30 +373,36 @@ Also the 'short segments' threshold, indicating the minimum amount of characters
 
 In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaptation method is needed for other languages.
 
-In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. Using a random sample of 10k documents per language, we selected the 50% best language-scored documents ([MBG] Those with most segments in the document language? Plz specify.) and computed ratios for the punctuation, bad characters and numbers subscores. The median for each subscore was computed with `language_adaptation/extract_ratios.py` (GEMA: review this) and then stored in `language_adaptation/medians_language.csv`.Finally, medians are used in the main script (`crawled_text_qualifier.py`) in order to create equivalences between ratios and scores. (GEMA: and this)
+In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. in a sample of 10k documents per language. Every document was analized with a modified version of the [_language_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#language_score). This language scoring is done like the other one with a difference, the number of correct alphabetic characters of every segment is multiplied by the language identificator probability of the segment. We want to know which documents have the highest proportion of segments and the better probability in the correct language. For example, let us consider a document with three segments, the first one has a language probability of 0.9 and contains 500 words characters. The second one is more confuse, with a probability of 0.4 with 25 alphabetic characters. The third is not in the correct language and has a lengh of 10 alphabetic characters. The calculation of this modified _language_score_ will be:
 
-Applying the Spanish ratios-score logic to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized:
+```
+sum(correct_word_characters * language_probability) / sum(correct_word_characters + wrong_word_characters) * 10
+
+(500 * 0.9 + 25 * 0.4) / (500 + 25 + 10) * 10 = 8.6
+```
+
+Using thse random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, was computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, medians are used in the main script (`crawled_text_qualifier.py`) in order to adapt ratios to every language.
+
+Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#punctuation_score):
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
 
-[MBG] I'd need to have the info on which were the thresholds in Spanish, so I can understand what gets (wrongly) discarded in Korean. Is it the median?
-
 Aiming at solving this problem, we decided to use medians as a point of reference to more accurately set score ranges. In the example above, Korean has a median of 7.3 in the punctuation score, while Spanish has a median of 2.4. We used this information to make a cross-multiplication in order to get a new and adapted score-ratio relation:
-
-[MBG] I replaced all the mentions to "word characters" to "alphabetic characters", because the other is confusing. If possible, plz change it in the histograms.
 
 ![alt text](example/korean_adapted.png)
 
-Using another example, the median of both Russian and Spanish for bad chararcters is the same (0.8), so no adjustments are needed. However, for regular punctuation, ([MBG] What is "regular punctuation"? Has it been mentioned before?) the median is different: 3.2 for Russian and 2.4 in Spanish. In this case, adjustments are indeed needed. The main script uses, again, a cross-multiplication to solve this and set more appropiate values for Russian. If we use the 0.9 ratio (which in Spanish is considered a 1/1 score), it means that Russian needs a 1.2 ratio to get a 1/1 score in the _punctuation_score_:
-[MBG] I don't think I get it?
+Using another example, the median of both Russian and Spanish for bad characters is the same (0.8), so no adjustments are needed. However, for punctuation, the median is different: 3.2 for Russian and 2.4 in Spanish. In this case, adjustments are indeed needed. The main script uses, again, a cross-multiplication to solve this and set more appropiate values for Russian. If we consider the _punctuation_score_ table (see table below), in Spanish a ratio between **0.9** and **2.5** is mandatory to get a perfect document (_punctuation_score_ = 1). With the cross-multiplication conversion, we can fit a better benchmark for non penalized documents:
+
 `(3.2 * 0.9) / 2.4 = 1.2`
+
+`(3.2 * 2.5) / 2.4 = 3.3`
 
 As a result, the adapted table for Russian regarding the _punctuation_score_ is as follows:
 
 | Punctuation score  |    Ratio Spanish      | Ratio Russian |
 |---|---|---|
-| 1 | 0.9 → 2.5 | 1.2 → 3.3 |
+| 1 | **0.9** → 2.5 | 1.2 → 3.3 |
 | __Too much__  |
 | 1 → 0.7 | 2.5 → 9 | 3.3 → 12 |
 | 0.7 → 0.5 | 9 → 13 | 12 → 17.3 |
@@ -375,7 +418,9 @@ Note that not only the relative values are adapted (_punctuation_score_, _bad_ch
 
 `2.4 * 1000 / 6.5`
 
-The relationship between punctuation and alphabetic characters is inversely proportional: as the number of punctuation symbols per alphabetic characters increases, the average number of alphabetic characters decreases. (GEMA: revisar esto. ) [MBG] I am not sure I am understanding it.
+The inverse cross-multiplication is used because the relationship between punctuation and alphabetic characters is inversely proportional. A language that normally uses less alphabetic characters than other will have a bigger ratio of punctuation. For example, in our test sample, German has a punctuation ratio of 2.8, this means that every punctuation mark usually needs 36 alphabetic characters (100/2.8 ≈ 36). In Chinese we found a ratio of 9.9, 10 alphabetic characters are thus needed every 10 alphabetic characters. We use the punctuation as a point of reference to extract the average alphabetic characters of the language, so we can obtain the conversion of what we called big or very big segments.
+
+In case the analysed language is not present in `language_adaptation/medians_language.csv`, we use the average ratio of the other languages in the csv.
 
 ## Glossary
 - _document_: whole text of a crawled website
