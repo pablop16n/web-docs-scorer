@@ -1,8 +1,8 @@
 # Quality text tagger
 
-Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad the document is (see below). The score is on a  0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata. 
+Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad documents are (see below). The score is on a 0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata. 
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing a large portion of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
+Good documents (scores 5-10) are those mainly made of linguistic data, containing large portions of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
 Quality Text Tagger requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
 
