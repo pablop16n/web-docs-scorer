@@ -9,25 +9,25 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
 
 # Table of contents
 
-1. [How does the tagger work](https://gitlab.prompsit.com/hplt/quality-text-tagger#how-does-the-tagger-work)
-    1. [Computing the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-the-quality_score)
-    2. [An example of the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#an-example-of-the-quality_score)
-    3. [Another example of the _quality_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#another-example-of-the-quality_score)
-2. [Usage](https://gitlab.prompsit.com/hplt/quality-text-tagger#usage)
-    1. [crawled_text_qualifier.py (main script)](https://gitlab.prompsit.com/hplt/quality-text-tagger#crawled_text_qualifierpy-main-script)
-    2. [quality_score_charts.py](https://gitlab.prompsit.com/hplt/quality-text-tagger#quality_score_chartspy)
-    3. [language_adaptation/extract_ratios.py](https://gitlab.prompsit.com/hplt/quality-text-tagger#language_adaptationextract_ratiospy)
-3. [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-the-penalty_score)
-4. [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger#computing-subscores)
-    1. [language_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#language_score)
-    2. [big_segments_score and largest_segments_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#big_segments_score-and-largest_segments_score)
-    3. [urls_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#urls_score)
-    4. [numbers_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#numbers_score)
-    5. [punctuation_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#punctuation_score)
-    6. [bad_chars_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#bad_chars_score)
-    7. [repeated_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#repeated-segments-repeated_score)
-5. [Adaptating subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger#adaptating-subscores-to-different-languages)
-6. [Glossary](https://gitlab.prompsit.com/hplt/quality-text-tagger#glossary)
+1. [How does the tagger work](#how-does-the-tagger-work)
+    1. [Computing the _quality_score_](#computing-the-quality_score)
+    2. [An example of the _quality_score_](#an-example-of-the-quality_score)
+    3. [Another example of the _quality_score_](#another-example-of-the-quality_score)
+2. [Usage](#usage)
+    1. [crawled_text_qualifier.py (main script)](#crawled_text_qualifierpy-main-script)
+    2. [quality_score_charts.py](#quality_score_chartspy)
+    3. [language_adaptation/extract_ratios.py](#language_adaptationextract_ratiospy)
+3. [Computing the _penalty_score_](#computing-the-penalty_score)
+4. [Computing subscores](#computing-subscores)
+    1. [language_score](#language_score)
+    2. [big_segments_score and largest_segments_score](#big_segments_score-and-largest_segments_score)
+    3. [urls_score](#urls_score)
+    4. [numbers_score](#numbers_score)
+    5. [punctuation_score](#punctuation_score)
+    6. [bad_chars_score](#bad_chars_score)
+    7. [repeated_score](#repeated-segments-repeated_score)
+5. [Adaptating subscores to different languages](#adaptating-subscores-to-different-languages)
+6. [Glossary](#glossary)
 
  
 ## How does the tagger work
@@ -36,16 +36,16 @@ In order to give a **_quality_score_** to a document, the quality text tagger co
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
-| language_score | ratio of [alphabetic characters](https://gitlab.prompsit.com/hplt/quality-text-tagger#glossary) in the correct language vs. total characters | 0 - 10 | 
+| language_score | ratio of [alphabetic characters](#glossary) in the correct language vs. total characters | 0 - 10 | 
 | big_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
 | largest_segments_score | length of largest text segments | 0 - 1 | 
 | urls_score | ratio of URLs vs. total segments | 0 - 1 | 
-| numbers_score | ratio of [numeric characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
-| punctuation_score | ratio of [punctuation characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) vs. alphabetic characters| 0 - 1 | 
-| bad_chars_score | ratio of [bad characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
+| numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
+| punctuation_score | ratio of [punctuation characters](#glossary) vs. alphabetic characters| 0 - 1 | 
+| bad_chars_score | ratio of [bad characters](#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
 | repeated_score | ratio of repeated segments | 0 - 1 | 
 
-A detailed description about these subscores is given in section [Computing subscores](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-subscores). 
+A detailed description about these subscores is given in section [Computing subscores](#computing-subscores). 
 
 
 ### Computing the _quality_score_
@@ -70,7 +70,7 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
 
 `penalty_score = first_lowest_negative_subscore_value * second_lowest_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values. Thus, a 0 value in any of the negative scores will suppose a 0 score in the final _quality_score_ regardless the other scores.  Please, see section [Computing the _penalty_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#computing-the-penalty_score) for more details.
+`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values. Thus, a 0 value in any of the negative scores will suppose a 0 score in the final _quality_score_ regardless the other scores.  Please, see section [Computing the _penalty_score_](#computing-the-penalty_score) for more details.
 
 3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**. Note that _penalty_score_ is always 0-1:
 
@@ -115,7 +115,7 @@ As explained in the section above, the **_quality_score_** of the document is co
 
 **quality score** = 9.32 x 0,88 = **8.2** 
 
-This means that the previous example is a good document (**_quality_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](https://gitlab.prompsit.com/hplt/quality-text-tagger#big_segments_score-and-largest_segments_score) and [Adaptating subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger#adaptating-subscores-to-different-languages) sections.
+This means that the previous example is a good document (**_quality_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](#adaptating-subscores-to-different-languages) sections.
 
 The document does not contain enough URLs, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -269,7 +269,7 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 ### language_score
 
-The _language_score_ is processed with `crawled_text_qualifier.valorate_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
+The _language_score_ is processed with `crawled_text_qualifier.valorate_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
@@ -279,7 +279,7 @@ Segments below a certain length threshold are not taken into account to this met
 
 These two metrics are obtained with `crawled_text_qualifier.valorate_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
-Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#adaptating-subscores-to-different-languages) section.
+Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](#adaptating-subscores-to-different-languages) section.
 <!-- [MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents. -->
 
 On the other hand, the _largest_segments_score_ is used to measure whether a document contains at least one very large segment. The lenght of what we consider a 'very large segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _largest_segments_score_ will be 0. If there is more than one of these segments (inside both thresholds), we use an average of their lengths to calculate the value.
@@ -373,7 +373,7 @@ Also the 'short segments' threshold, indicating the minimum amount of characters
 
 In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaptation method is needed for other languages.
 
-In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. from a sample of 10k documents per language. Every document was analized with a modified version of the [_language_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#language_score). In the modified version, the number of correct alphabetic characters of every segment is multiplied by the language identifier probability of the segment. We want to know which documents have the highest proportion of segments and the better probability in the correct language. For example, let us consider a document with three segments, the first one has a language probability of 0.9 and contains 500 alphabetic characters. The second has a low language probability (0.4) and 25 alphabetic characters. The third is not in the correct language and contains only 10 alphabetic characters. The calculation of the modified _language_score_ will be:
+In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. from a sample of 10k documents per language. Every document was analized with a modified version of the [_language_score_](#language_score). In the modified version, the number of correct alphabetic characters of every segment is multiplied by the language identifier probability of the segment. We want to know which documents have the highest proportion of segments and the better probability in the correct language. For example, let us consider a document with three segments, the first one has a language probability of 0.9 and contains 500 alphabetic characters. The second has a low language probability (0.4) and 25 alphabetic characters. The third is not in the correct language and contains only 10 alphabetic characters. The calculation of the modified _language_score_ will be:
 
 ```
 sum(correct_word_characters * language_probability) / sum(correct_word_characters + wrong_word_characters) * 10
@@ -383,7 +383,7 @@ sum(correct_word_characters * language_probability) / sum(correct_word_character
 
 Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`crawled_text_qualifier.py`) in order to adapt ratios to every language.
 
-Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](https://gitlab.prompsit.com/hplt/quality-text-tagger/-/blob/main/README.md#punctuation_score):
+Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
