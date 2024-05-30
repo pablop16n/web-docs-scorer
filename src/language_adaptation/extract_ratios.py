@@ -45,22 +45,22 @@ alpha_pattern = join_utf_blocks(BAD_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES
 spaces_pattern = join_utf_blocks(SPACES)
 
 
-def valorate_numbers(word_chars, numbers):
+def score_numbers(word_chars, numbers):
     if word_chars <= 0:
         return 0
     return round((numbers/word_chars)*100, 1)
 
-def valorate_bad_chars(word_chars, bad_chars):
+def score_bad_chars(word_chars, bad_chars):
     if word_chars <= 0:
         return 0
     return round((bad_chars/word_chars)*100, 1)
 
-def valorate_punctuation(word_chars, punctuation_chars):
+def score_punctuation(word_chars, punctuation_chars):
     if word_chars <= 0:
         return 0
     return round((punctuation_chars/word_chars)*100, 1)
 
-def valorate_lang(ref_language, lang_segments, scores_lang, word_chars):
+def score_lang(ref_language, lang_segments, scores_lang, word_chars):
     if len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars):
         #Errors from unmatched scores
         return -1000
@@ -116,10 +116,10 @@ for json_f in os.listdir(input_path):
                 bad_chars = sum(x[2] for x in condensed_data)
                 numbers_chars = sum(x[3] for x in condensed_data)
                 
-                language_score = valorate_lang(document["document_lang"], document["langs"], document["scores"], word_chars)
-                numbers_score = valorate_numbers(sum(word_chars), numbers_chars)
-                punctuation_score = valorate_bad_chars(sum(word_chars), punctuation_chars)
-                bad_chars_score = valorate_bad_chars(sum(word_chars), bad_chars)
+                language_score = score_lang(document["document_lang"], document["langs"], document["scores"], word_chars)
+                numbers_score = score_numbers(sum(word_chars), numbers_chars)
+                punctuation_score = score_bad_chars(sum(word_chars), punctuation_chars)
+                bad_chars_score = score_bad_chars(sum(word_chars), bad_chars)
 
                 df.loc[document["id"]] = [language_score, numbers_score, punctuation_score, bad_chars_score]
                 
