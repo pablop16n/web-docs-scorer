@@ -16,7 +16,7 @@ WDS requires the input documents to be formatted in JSONL, containing the same f
 2. [Usage](#usage)
     1. [docscorer.py (main script)](#docscorerpy-main-script)
     2. [WDS_score_charts.py](#WDS_score_chartspy)
-    3. [language_adaptation/extract_ratios.py](#language_adaptationextract_ratiospy)
+    3. [language_adaption/extract_ratios.py](#language_adaptionextract_ratiospy)
 3. [Computing the _penalty_score_](#computing-the-penalty_score)
 4. [Computing subscores](#computing-subscores)
     1. [language_score](#language_score)
@@ -26,7 +26,7 @@ WDS requires the input documents to be formatted in JSONL, containing the same f
     5. [punctuation_score](#punctuation_score)
     6. [singular_chars_score](#singular_chars_score)
     7. [repeated_score](#repeated-segments-repeated_score)
-5. [Adaptating subscores to different languages](#adaptating-subscores-to-different-languages)
+5. [Adaptating subscores to different languages](#adapting-subscores-to-different-languages)
 6. [Glossary](#glossary)
 
  
@@ -115,7 +115,7 @@ As explained in the section above, the **_WDS_score_** of the document is comput
 
 **WDS score** = 9.32 x 0,88 = **8.2** 
 
-This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very long segment', but it only contains 4 'long segments' (_long_segments_score_ = 0.4/1). For Italian we consider 'superlong segments' those with more than 1208 alphabetic characters and to be considered a 'long segment' almost 302 alphabetic characters are needed. For more information about these scores see the [long_segments_score and superlong_segments_score](#adaptating-subscores-to-different-languages) sections.
+This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very long segment', but it only contains 4 'long segments' (_long_segments_score_ = 0.4/1). For Italian we consider 'superlong segments' those with more than 1208 alphabetic characters and to be considered a 'long segment' almost 302 alphabetic characters are needed. For more information about these scores see the [long_segments_score and superlong_segments_score](#adapting-subscores-to-different-languages) sections.
 
 The document does not contain enough URLs, punctuation or singular characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _singular_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -213,11 +213,11 @@ The output csvs will contain the next columns. The final score will always be co
 
 #### Example
 
-```python3 docscorer.py --input=input_dir --output=output_dir --config=language_adaptation/medians_language.csv ```
+```python3 docscorer.py --input=input_dir --output=output_dir --config=language_adaption/medians_language.csv ```
 
 
 #### Requirements
-The document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` is needed. It can be used the csv present by default in the repository or it can be created with custom data. These data is used as a model to undestand the differences between languages, so in a custom approach the text data used must be representative, diverse and comparable.
+The document `./language_adaption/medians_language.csv` created by `./language_adaption/extract_ratios.py` is needed. It can be used the csv present by default in the repository or it can be created with custom data. These data is used as a model to undestand the differences between languages, so in a custom approach the text data used must be representative, diverse and comparable.
 
 ### WDS_charts.py
 
@@ -235,9 +235,9 @@ Script that creates a HTML document with one histogram for every csv document in
 
 It is needed a directory with the `docscorer.py` output.
 
-#### language_adaptation/extract_ratios.py
+#### language_adaption/extract_ratios.py
 
-This script extracts the median ratios of numbers, punctuation and singular characters which are used to process the language adaptation from a sample of documents. The input data must consists in a jsonl file for every language with the structure of HPLT 1.2v. The selected data must be representative, diverse and comparable.
+This script extracts the median ratios of numbers, punctuation and singular characters which are used to process the language adaption from a sample of documents. The input data must consists in a jsonl file for every language with the structure of HPLT 1.2v. The selected data must be representative, diverse and comparable.
 
 #### Parameters 
 - ```input```: directory with jsonl files they must have the HPLT 1.2v like structure regarding keys and values.
@@ -279,7 +279,7 @@ Segments below a certain length threshold are not taken into account to this met
 
 These two metrics are obtained with `docscorer.score_long_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
-Regarding the _long_segments_score_, a document receives 0.1 score points for every long segment, up to a maximum score of 1. The length of what we consider a 'long segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](#adaptating-subscores-to-different-languages) section.
+Regarding the _long_segments_score_, a document receives 0.1 score points for every long segment, up to a maximum score of 1. The length of what we consider a 'long segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaption see the [Adapting subscores to different languages](#adapting-subscores-to-different-languages) section.
 <!-- [MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents. -->
 
 On the other hand, the _superlong_segments_score_ is used to measure whether a document contains at least one very long segment. The lenght of what we consider a 'very long segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _superlong_segments_score_ will be 0. If there is more than one of these segments (inside both thresholds), we use an average of their lengths to calculate the value.
@@ -361,7 +361,7 @@ The _repeated_score_ score is processed with `doscorer.score_repeated()`, and it
 
 ## Adaptating subscores to different languages 
 
-This gets processed in `language_adaptation.extract_ratios()`and `docscorer`.
+This gets processed in `language_adaption.extract_ratios()`and `docscorer`.
 
 Some of the subscores used to get the _WDS_score_ are based on ratios that need to be computed for each language for optimal performance:
   * _punctuation_score_
@@ -371,7 +371,7 @@ Some of the subscores used to get the _WDS_score_ are based on ratios that need 
   * _very_long_segments_score_ 
 Also the 'short segments' threshold, indicating the minimum amount of characters that a segment must have in order to being taken into account, is language-dependent.
 
-In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaptation method is needed for other languages.
+In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaption method is needed for other languages.
 
 In order to adapt the values to other languages, we used the scores and labels provided as metadata in HPLT v1.2. from a sample of 10k documents per language. Every document was analized with a modified version of the [_language_score_](#language_score). In the modified version, the number of correct alphabetic characters of every segment is multiplied by the language identifier probability of the segment. We want to know which documents have the highest proportion of segments and the better probability in the correct language. For example, let us consider a document with three segments, the first one has a language probability of 0.9 and contains 500 alphabetic characters. The second has a low language probability (0.4) and 25 alphabetic characters. The third is not in the correct language and contains only 10 alphabetic characters. The calculation of the modified _language_score_ will be:
 
@@ -381,7 +381,7 @@ sum(correct_word_characters * language_probability) / sum(correct_word_character
 (500 * 0.9 + 25 * 0.4) / (500 + 25 + 10) * 10 = 8.6
 ```
 
-Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, singular characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
+Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, singular characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaption/extract_ratios.py` and then stored in `language_adaption/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
 
 Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _WDS_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
 
@@ -420,7 +420,7 @@ Note that not only the relative values are adapted (_punctuation_score_, _singul
 
 The inverse cross-multiplication is used because the relationship between punctuation and alphabetic characters is inversely proportional. A language that normally uses less alphabetic characters than other will have a bigger ratio of punctuation. For example, in our test sample, German has a punctuation ratio of 2.8, this means that every punctuation mark usually needs 36 alphabetic characters (100/2.8 ≈ 36). In Chinese we found a ratio of 9.9, 10 alphabetic characters are thus needed every 10 alphabetic characters. We use the punctuation as a point of reference to extract the average alphabetic characters of the language, so we can obtain the conversion of what we called long or superlong segments.
 
-In case the analysed language is not present in `language_adaptation/medians_language.csv`, we use the average ratio of the other languages in the csv.
+In case the analysed language is not present in `language_adaption/medians_language.csv`, we use the average ratio of the other languages in the csv.
 
 ## Glossary
 - _document_: whole text of a crawled website

@@ -45,4 +45,4 @@ Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 py-modules = ['docscorer']
 
 [tool.setuptools.package-data]
-docscorer = [ "language_adaptation/medians_language.csv"]
+docscorer = [ "language_adaption/medians_language.csv"]

@@ -16,18 +16,18 @@ from utils.utils import average, precision_round, join_utf_blocks, custom_mean
 
 
 class DocumentScorer:
-    def __init__(self,  config="language_adaptation/medians_language.csv"):
+    def __init__(self,  config="language_adaption/medians_language.csv"):
         ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________    
-        df_lang_adaptation = pd.read_csv(config)
-        df_lang_adaptation.set_index("language", inplace=True)
-        LANGUAGES = df_lang_adaptation.index
+        df_lang_adaption = pd.read_csv(config)
+        df_lang_adaption.set_index("language", inplace=True)
+        LANGUAGES = df_lang_adaption.index
         
     
-        LANGUAGES_NUMBERS = {lang : round(df_lang_adaptation.loc[lang]["numbers_score"], 1) for lang in LANGUAGES}
-        LANGUAGES_PUNCTUATION = {lang : round(df_lang_adaptation.loc[lang]["punctuation_score"], 1) for lang in LANGUAGES}
-        LANGUAGES_BAD_CHARS = {lang : round(df_lang_adaptation.loc[lang]["bad_chars_score"], 1) for lang in LANGUAGES}
+        LANGUAGES_NUMBERS = {lang : round(df_lang_adaption.loc[lang]["numbers_score"], 1) for lang in LANGUAGES}
+        LANGUAGES_PUNCTUATION = {lang : round(df_lang_adaption.loc[lang]["punctuation_score"], 1) for lang in LANGUAGES}
+        LANGUAGES_BAD_CHARS = {lang : round(df_lang_adaption.loc[lang]["bad_chars_score"], 1) for lang in LANGUAGES}
         
-        del df_lang_adaptation
+        del df_lang_adaption
         
         ## _____ REFERENCE RATIO VALUES FOR SPANISH ________________________________________________________________________________________________
         #Current values in the provided csv    
@@ -416,7 +416,7 @@ def main():
 
     config=args['--config']
     if not config:
-        config=os.path.dirname(__file__)+"/language_adaptation/medians_language.csv"
+        config="language_adaption/medians_language.csv"
     if( not os.path.exists(config)):
         logging.error(f"File {config} not found")
         sys.exit(-1)
