@@ -14,7 +14,7 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
     2. [An example of the _quality_score_](#an-example-of-the-quality_score)
     3. [Another example of the _quality_score_](#another-example-of-the-quality_score)
 2. [Usage](#usage)
-    1. [crawled_text_qualifier.py (main script)](#crawled_text_qualifierpy-main-script)
+    1. [docscorer.py (main script)](#docscorerpy-main-script)
     2. [quality_score_charts.py](#quality_score_chartspy)
     3. [language_adaptation/extract_ratios.py](#language_adaptationextract_ratiospy)
 3. [Computing the _penalty_score_](#computing-the-penalty_score)
@@ -50,7 +50,7 @@ A detailed description about these subscores is given in section [Computing subs
 
 ### Computing the _quality_score_
 
-The  _quality_score_ is processed with `crawled_text_qualifier.score_text()`. It combines the aforementioned set of subscores as follows:
+The  _quality_score_ is processed with `docscorer.score_text()`. It combines the aforementioned set of subscores as follows:
 
 1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: 
   * _language_score_ 
@@ -186,7 +186,7 @@ With such a low quality score, this document can be considered an undesirable do
 ## Usage
 
 
-### crawled_text_qualifier.py
+### docscorer.py
 
 The main script, it will create a csv for each jsonl present in the input directory. The input jsonl files must contain the next columns:
 - `id`: identifier of the document, must be unique.
@@ -208,12 +208,12 @@ The output csvs will contain the next columns. The final score will always be co
 
 #### Parameters
 - ```input```: directory with jsonl files provided by the language identifier
-- ```output```: existing directory
-- ```config```: path of the `medians_language.csv` document
+- ```output```: existing directory (optional)
+- ```config```: path of the `medians_language.csv` document (optional)
 
 #### Example
 
-```python3 crawled_text_qualifier.py --input=input_dir --output=output_dir --config=language_adaptation/medians_language.csv ```
+```python3 docscorer.py --input=input_dir --output=output_dir --config=language_adaptation/medians_language.csv ```
 
 
 #### Requirements
@@ -224,7 +224,7 @@ The document `./language_adaptation/medians_language.csv` created by `./language
 Script that creates a HTML document with one histogram for every csv document in the input.
 
 #### Parameters 
-- ```input```: directory with the csvs obtained with `crawled_text_qualifier.py`
+- ```input```: directory with the csvs obtained with `docscorer.py`
 - ```output```: existing directory
 
 #### Example
@@ -233,7 +233,7 @@ Script that creates a HTML document with one histogram for every csv document in
 
 #### Requirements
 
-It is needed a directory with the `crawled_text_qualifier.py` output.
+It is needed a directory with the `docscorer.py` output.
 
 #### language_adaptation/extract_ratios.py
 
@@ -249,7 +249,7 @@ This script extracts the median ratios of numbers, punctuation and bad character
 
 ## Computing the _penalty_score_
 
-The _penalty_score_  is obtained with `crawled_text_qualifier.custom_mean()` . The subscores used to compute the **_penalty_score_** are those that represent the negative aspects of the document:
+The _penalty_score_  is obtained with `docscorer.custom_mean()` . The subscores used to compute the **_penalty_score_** are those that represent the negative aspects of the document:
   *  _urls_score_
   * _numbers_score_
   * _punctuation_score_
@@ -269,7 +269,7 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 ### language_score
 
-The _language_score_ is processed with `crawled_text_qualifier.score_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
+The _language_score_ is processed with `docscorer.score_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
@@ -277,7 +277,7 @@ Segments below a certain length threshold are not taken into account to this met
 
 ### big_segments_score and largest_segments_score
 
-These two metrics are obtained with `crawled_text_qualifier.score_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
+These two metrics are obtained with `docscorer.score_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
 Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](#adaptating-subscores-to-different-languages) section.
 <!-- [MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents. -->
@@ -286,7 +286,7 @@ On the other hand, the _largest_segments_score_ is used to measure whether a doc
 
 ### urls_score
 
-This score is processed with `crawled_text_qualifier.score_urls()`, by looking at the amount of URLs in a document. In particular, we count the amount of "www" or "http" strings in the whole text, and then we get the ratio between the number of URLs and the total amount of segments. We ignore short segments, as for the _language_score_.
+This score is processed with `docscorer.score_urls()`, by looking at the amount of URLs in a document. In particular, we count the amount of "www" or "http" strings in the whole text, and then we get the ratio between the number of URLs and the total amount of segments. We ignore short segments, as for the _language_score_.
 The _urls_score_ is language independent, and its value is not lineal. We first get the percentage of URLs per 100 segments:
 
 `number_of_urls / number_of_segments * 100`
@@ -302,7 +302,7 @@ Then, a final _urls_score_ is assigned to the document, depending on the percent
 
 ### numbers_score
 
-This metric is processed with `crawled_text_qualifier.score_numbers()`, and it's used to determine whether there is a high number of numeric characters in a document. It is computed by getting the percentage of numeric characters compared to alphabetic characters:
+This metric is processed with `docscorer.score_numbers()`, and it's used to determine whether there is a high number of numeric characters in a document. It is computed by getting the percentage of numeric characters compared to alphabetic characters:
 
 `numeric_characters / alphabetic_characters * 100`
 
@@ -318,7 +318,7 @@ This metric and its thresholds are lineal and language-dependent. In Spanish, fo
 
 ### punctuation_score
 
-The _punctuation_score_ is processed with `crawled_text_qualifier.score_punctuation()`. This score is used to penalize texts with too much or too little amount of punctuation characters. The percentage of punctuation characters is calculed this way:
+The _punctuation_score_ is processed with `docscorer.score_punctuation()`. This score is used to penalize texts with too much or too little amount of punctuation characters. The percentage of punctuation characters is calculed this way:
 
 `punctuation_characters / alphabetic_characters * 100`
 
@@ -341,7 +341,7 @@ Note that not only too much punctuation is problematic, but also too few, usuall
 
 ### bad_chars_score
 
-This subscores is processed with `crawled_text_qualifier.score_bad_chars()`, and it's used to penalize texts with undesired characters (such as emojis, separators, ...):
+This subscores is processed with `docscorer.score_bad_chars()`, and it's used to penalize texts with undesired characters (such as emojis, separators, ...):
 
 `bad_characters / alphabetic_characters * 100`
 
@@ -357,11 +357,11 @@ This score and its thresholds are lineal and language-dependent. In Spanish, for
 
 ### repeated segments (repeated_score)
 
-The _repeated_score_ score is processed with `crawled_text_qualifier.score_repeated()`, and it computes the ratio of repeated segments. Using the same rationale as for the _language_score_ processing, short segments are not taken into account for this metric.  The score follows an inverse function of the amount of repeated segments: for example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will receive a 0 score. 
+The _repeated_score_ score is processed with `doscorer.score_repeated()`, and it computes the ratio of repeated segments. Using the same rationale as for the _language_score_ processing, short segments are not taken into account for this metric.  The score follows an inverse function of the amount of repeated segments: for example, 0% of repeated segments will get a 1 score, 20% of repeated segments will have a 0.8 and 100% of repeated segments will receive a 0 score. 
 
 ## Adaptating subscores to different languages 
 
-This gets processed in `language_adaptation.extract_ratios()`and `crawled_text_qualifier`.
+This gets processed in `language_adaptation.extract_ratios()`and `docscorer`.
 
 Some of the subscores used to get the _quality_score_ are based on ratios that need to be computed for each language for optimal performance:
   * _punctuation_score_
@@ -381,7 +381,7 @@ sum(correct_word_characters * language_probability) / sum(correct_word_character
 (500 * 0.9 + 25 * 0.4) / (500 + 25 + 10) * 10 = 8.6
 ```
 
-Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`crawled_text_qualifier.py`) in order to adapt ratios to every language.
+Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
 
 Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
 
