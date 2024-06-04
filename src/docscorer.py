@@ -1,6 +1,6 @@
 """
 Usage:
-  crawled_text_qualifier.py --input=<dir> --output=<dir> --config=<csv>
+  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>]
 
 """
 
@@ -357,8 +357,8 @@ class DocumentScorer:
         score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"], document=document["text"])
         return score
     
-def score_directory(input_path, output_path):
-
+def score_directory(input_path, output_path, config):
+    ds=DocumentScorer(config)
     for json_f in os.listdir(input_path):
         if json_f.endswith(".jsonl"):
             documents = os.path.join(input_path, json_f)
@@ -373,8 +373,9 @@ def score_directory(input_path, output_path):
                 logging.info(f"{file_name} - {n_lines} documents")
             with open(documents, "r", encoding="utf-8") as file:
                 for document in file:
-                    document_score = score_document(df, document)
-                    df.loc[document["id"]] = [document_score]
+                    document_score = ds.score_document(document)
+                    docid = json.loads(document)["id"]
+                    df.loc[docid] = [document_score]
                     
                     i+=1
                     if i % 10000 == 0:
@@ -405,14 +406,21 @@ def main():
         sys.exit(-1)
 
     output_path=args['--output']
+    if not output_path:
+        output_path = input_path+"/document_scores"
+        if (not os.path.exists(output_path)):
+            os.makedirs(output_path)
     if( not os.path.exists(output_path)):
         logging.error(f"Directory {output_path} not found")
         sys.exit(-1)
 
     config=args['--config']
+    if not config:
+        config="language_adaptation/medians_language.csv"
     if( not os.path.exists(config)):
         logging.error(f"File {config} not found")
         sys.exit(-1)
+    
 
     logging.info("Executing main program...")
     
