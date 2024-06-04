@@ -1,21 +1,21 @@
-# Quality text tagger
+# Web Docs Scorer
 
-Quality Text Tagger is an application that analyzes monolingual documents (from crawled websites) and gives them a quality score that works as a measure of how good or bad documents are (see below). The score is on a 0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata. 
+Web Docs Scorer (WDS) is an application that analyzes monolingual documents whose text has been extracted from crawled websites and gives them a score that works as a measure of how good or bad documents are (see below). The score is on a 0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata. 
 
 Good documents (scores 5-10) are those mainly made of linguistic data, containing large portions of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, segment repetitions, etc.  
 
-Quality Text Tagger requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
+WDS requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs. 
 
 
 # Table of contents
 
-1. [How does the tagger work](#how-does-the-tagger-work)
-    1. [Computing the _quality_score_](#computing-the-quality_score)
-    2. [An example of the _quality_score_](#an-example-of-the-quality_score)
-    3. [Another example of the _quality_score_](#another-example-of-the-quality_score)
+1. [How does the WDS work](#how-does-the-WDS-work)
+    1. [Computing the _WDS_score_](#computing-the-WDS_score)
+    2. [An example of the _WDS_score_](#an-example-of-the-WDS_score)
+    3. [Another example of the _WDS_score_](#another-example-of-the-WDS_score)
 2. [Usage](#usage)
     1. [docscorer.py (main script)](#docscorerpy-main-script)
-    2. [quality_score_charts.py](#quality_score_chartspy)
+    2. [WDS_score_charts.py](#WDS_score_chartspy)
     3. [language_adaptation/extract_ratios.py](#language_adaptationextract_ratiospy)
 3. [Computing the _penalty_score_](#computing-the-penalty_score)
 4. [Computing subscores](#computing-subscores)
@@ -30,9 +30,9 @@ Quality Text Tagger requires the input documents to be formatted in JSONL, conta
 6. [Glossary](#glossary)
 
  
-## How does the tagger work
+## How does the WDS work
 
-In order to give a **_quality_score_** to a document, the quality text tagger computes several subscores over its content and metadata. Note that higher is always better:
+In order to give a **_WDS_score_** to a document, the WDS computes several subscores over its content and metadata. Note that higher is always better:
 
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
@@ -48,9 +48,9 @@ In order to give a **_quality_score_** to a document, the quality text tagger co
 A detailed description about these subscores is given in section [Computing subscores](#computing-subscores). 
 
 
-### Computing the _quality_score_
+### Computing the _WDS_score_
 
-The  _quality_score_ is processed with `docscorer.score_text()`. It combines the aforementioned set of subscores as follows:
+The  _WDS_score_ is processed with `docscorer.score_text()`. It combines the aforementioned set of subscores as follows:
 
 1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: 
   * _language_score_ 
@@ -70,16 +70,16 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
 
 `penalty_score = first_lowest_negative_subscore_value * second_lowest_negative_subscore_value * average (remaining_negative_subscores_values) `
 
-`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values. Thus, a 0 value in any of the negative scores will suppose a 0 score in the final _quality_score_ regardless the other scores.  Please, see section [Computing the _penalty_score_](#computing-the-penalty_score) for more details.
+`first_lowest_negative_subscore_value` and `second_lowest_negative_subscore_value` are the two subscores with the lowest values. Thus, a 0 value in any of the negative scores will suppose a 0 score in the final _WDS_score_ regardless the other scores.  Please, see section [Computing the _penalty_score_](#computing-the-penalty_score) for more details.
 
-3. Finally, we get the final **_quality_score_** by multipliying the **_basic_score_** by the **_penalty_score_**. Note that _penalty_score_ is always 0-1:
+3. Finally, we get the final **_WDS_score_** by multipliying the **_basic_score_** by the **_penalty_score_**. Note that _penalty_score_ is always 0-1:
 
-`quality score = basic score * penalty score`
+`WDS score = basic score * penalty score`
 
 
-### An example of the _quality_score_
+### An example of the _WDS_score_
 
-In this section we show an example on how the **_quality_score_** is computed, and the meaning of its subscores. The document is extracted from the HPLT v1.2 Italian dataset, and can be found in `example/example1.jsonl`. An excerpt of the document is shown below:
+In this section we show an example on how the **_WDS_score_** is computed, and the meaning of its subscores. The document is extracted from the HPLT v1.2 Italian dataset, and can be found in `example/example1.jsonl`. An excerpt of the document is shown below:
 
 > [...]
 > 
@@ -107,15 +107,15 @@ From this document, we get these subscores:
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
-As explained in the section above, the **_quality_score_** of the document is computed by using these subscores values:
+As explained in the section above, the **_WDS_score_** of the document is computed by using these subscores values:
 
 **basic score** = (9.9 x 0.8) + 0.4 + 1 = **9.32**
 
 **penalty score** = 0.92 x 0.96 x ((1+1+1)/3) =  **0.88**
 
-**quality score** = 9.32 x 0,88 = **8.2** 
+**WDS score** = 9.32 x 0,88 = **8.2** 
 
-This means that the previous example is a good document (**_quality_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](#adaptating-subscores-to-different-languages) sections.
+This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](#adaptating-subscores-to-different-languages) sections.
 
 The document does not contain enough URLs, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -127,9 +127,9 @@ The document also has some repeated segments (_repeated_score_ = 0.96/1) caused 
 > Grammatica, livello avanzato [...]
 
 
-### Another example of the _quality_score_
+### Another example of the _WDS_score_
 
-The following excerpt belongs to the file `example/example2.txt`, a bad scored Chinese document from the HPLT v1.2 dataset. The document got a **_quality_score_** of 1.5:
+The following excerpt belongs to the file `example/example2.txt`, a bad scored Chinese document from the HPLT v1.2 dataset. The document got a **_WDS_score_** of 1.5:
 
 > [...]
 >  
@@ -175,13 +175,13 @@ The document does not seem to have bad punctuation or bad characters, and it doe
 |---|---|
 |0.44 * 0.56 * 0.97| 0.24 |
 
-Thus, the final _quality_score_ is also very low:
+Thus, the final _WDS_score_ is also very low:
 
 |basic score * penalty score| Result |
 |---|---|
 | 6.5 * 0.24| 1.5 |
 
-With such a low quality score, this document can be considered an undesirable document. 
+With such a low WDS score, this document can be considered an undesirable document. 
 
 ## Usage
 
@@ -195,7 +195,7 @@ The main script, it will create a csv for each jsonl present in the input direct
 - `langs`: list of language labels for each segment of the document.
 - `text`: text of the document. Segments must be separated by _\n_.
 
-The output csvs will contain the next columns. The final score will always be considered the _quality_score_:
+The output csvs will contain the next columns. The final score will always be considered the _WDS_score_:
 - quality_score
 - language_score
 - url_score
@@ -219,7 +219,7 @@ The output csvs will contain the next columns. The final score will always be co
 #### Requirements
 The document `./language_adaptation/medians_language.csv` created by `./language_adaptation/extract_ratios.py` is needed. It can be used the csv present by default in the repository or it can be created with custom data. These data is used as a model to undestand the differences between languages, so in a custom approach the text data used must be representative, diverse and comparable.
 
-### quality_score_charts.py
+### WDS_charts.py
 
 Script that creates a HTML document with one histogram for every csv document in the input.
 
@@ -229,7 +229,7 @@ Script that creates a HTML document with one histogram for every csv document in
 
 #### Example
 
-```python3 quality_score_charts.py --input=input_dir --output=output_dir ```
+```python3 WDS_charts.py --input=input_dir --output=output_dir ```
 
 #### Requirements
 
@@ -256,7 +256,7 @@ The _penalty_score_  is obtained with `docscorer.custom_mean()` . The subscores 
   * _bad_chars_score_
   * _repeated_score_
 
-The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final _quality_score_ of 0) to 1 (no penalization is applied).
+The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final _WDS_score_ of 0) to 1 (no penalization is applied).
 
 To compute the _penalty_score_, the two lowest values from the aforementioned subsscores are multiplied by the average of the rest of values:
 
@@ -383,7 +383,7 @@ sum(correct_word_characters * language_probability) / sum(correct_word_character
 
 Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
 
-Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _quality_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
+Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _WDS_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
 
 ![alt text](example/spanish.png)
 ![alt text](example/korean_non_adapted.png)
