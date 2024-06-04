@@ -1,5 +1,5 @@
 [project]
-name = "web-docs-scorer"
+name = "docscorer"
 version = "0.1"
 license = {file = "LICENSE"}
 readme = "README.md"
@@ -35,11 +35,14 @@ email = "mbanon@prompsit.com"
 name = "Jaume Zaragoza"
 email = "jzaragoza@prompsit.com"
 
-[project.scripts]
-doscorer = "docscorer.docscorer:main"
-
 [project.urls]
 Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 "WebDocsScorer on GitHub" = "https://github.com/pablop16n/web-docs-scorer/"
 "Prompsit Language Engineering" = "http://www.prompsit.com"
 "HPLT Project" = "https://hplt-project.org"
+
+[tool.setuptools]
+py-modules = ['docscorer']
+
+[tool.setuptools.package-data]
+docscorer = [ "language_adaptation/medians_language.csv"]

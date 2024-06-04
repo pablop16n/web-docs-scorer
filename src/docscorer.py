@@ -416,7 +416,7 @@ def main():
 
     config=args['--config']
     if not config:
-        config="language_adaptation/medians_language.csv"
+        config=os.path.dirname(__file__)+"/language_adaptation/medians_language.csv"
     if( not os.path.exists(config)):
         logging.error(f"File {config} not found")
         sys.exit(-1)
