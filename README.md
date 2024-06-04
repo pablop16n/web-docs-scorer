@@ -20,11 +20,11 @@ WDS requires the input documents to be formatted in JSONL, containing the same f
 3. [Computing the _penalty_score_](#computing-the-penalty_score)
 4. [Computing subscores](#computing-subscores)
     1. [language_score](#language_score)
-    2. [big_segments_score and largest_segments_score](#big_segments_score-and-largest_segments_score)
+    2. [long_segments_score and superlong_segments_score](#long_segments_score-and-superlong_segments_score)
     3. [urls_score](#urls_score)
     4. [numbers_score](#numbers_score)
     5. [punctuation_score](#punctuation_score)
-    6. [bad_chars_score](#bad_chars_score)
+    6. [singular_chars_score](#singular_chars_score)
     7. [repeated_score](#repeated-segments-repeated_score)
 5. [Adaptating subscores to different languages](#adaptating-subscores-to-different-languages)
 6. [Glossary](#glossary)
@@ -37,12 +37,12 @@ In order to give a **_WDS_score_** to a document, the WDS computes several subsc
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
 | language_score | ratio of [alphabetic characters](#glossary) in the correct language vs. total characters | 0 - 10 | 
-| big_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
+| long_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
 | largest_segments_score | length of largest text segments | 0 - 1 | 
 | urls_score | ratio of URLs vs. total segments | 0 - 1 | 
 | numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | punctuation_score | ratio of [punctuation characters](#glossary) vs. alphabetic characters| 0 - 1 | 
-| bad_chars_score | ratio of [bad characters](#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
+| singular_chars_score | ratio of [singular characters](#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
 | repeated_score | ratio of repeated segments | 0 - 1 | 
 
 A detailed description about these subscores is given in section [Computing subscores](#computing-subscores). 
@@ -54,10 +54,10 @@ The  _WDS_score_ is processed with `docscorer.score_text()`. It combines the afo
 
 1. First, a **_basic_score_** is obtained by adding the subscores that represent positive aspects of the document content: 
   * _language_score_ 
-  * _big_segments_score_
-  * _largest_segments_score_
+  * _long_segments_score_
+  * _superlong_segments_score_
 
-`basic_score = language_score * 0.8 + big_segments_score + largest_segments_score`
+`basic_score = language_score * 0.8 + long_segments_score + superlong_segments_score`
 
 Note that the _language_score_ is weighted (since it scores from 0 to 10, while the other values score 0 to 1), so the maximum possible value of the _basic_score_ is 10.
 
@@ -65,7 +65,7 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
   * _urls_score_
   * _numbers_score_
   * _punctuation_score_
-  * _bad_chars_score_
+  * _singular_chars_score_
   * _repeated_score_
 
 `penalty_score = first_lowest_negative_subscore_value * second_lowest_negative_subscore_value * average (remaining_negative_subscores_values) `
@@ -99,11 +99,11 @@ From this document, we get these subscores:
 | Subcores  |    Value      |
 |---|---|
 | language_score | 9.9 |
-| big_segments_score | 0.4 |
-| largest_segments_score | 1.0 |
+| long_segments_score | 0.4 |
+| superlong_segments_score | 1.0 |
 | url_score | 1.0 |
 | punctuation_score | 1.0 |
-| bad_chars_score | 1.0 |
+| singular_chars_score | 1.0 |
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
 
@@ -115,9 +115,9 @@ As explained in the section above, the **_WDS_score_** of the document is comput
 
 **WDS score** = 9.32 x 0,88 = **8.2** 
 
-This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very big segment', but it only contains 4 'big segments' (_big_segments_score_ = 0.4/1). For Italian we consider 'very big segments' those with more than 1208 alphabetic characters and to be considered a 'big segment' almost 302 alphabetic characters are needed. For more information about these scores see the [big_segments_score and largest_segments_score](#adaptating-subscores-to-different-languages) sections.
+This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very long segment', but it only contains 4 'long segments' (_long_segments_score_ = 0.4/1). For Italian we consider 'superlong segments' those with more than 1208 alphabetic characters and to be considered a 'long segment' almost 302 alphabetic characters are needed. For more information about these scores see the [long_segments_score and superlong_segments_score](#adaptating-subscores-to-different-languages) sections.
 
-The document does not contain enough URLs, punctuation or bad characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _bad_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
+The document does not contain enough URLs, punctuation or singular characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _singular_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
 > [...] _Gennaio 2022 Giugno 2021 \n Marzo 2021 \n Novembre 2020 \n Ottobre 2020..._ [...]
 
@@ -154,22 +154,22 @@ We compute the subscores:
 | Subscore  |    Value      |
 |---|---|
 | language_score | 8.0 |
-| big_segments_score | 0.1 |
-| largest_segments_score | 0.0 |
+| long_segments_score | 0.1 |
+| superlong_segments_score | 0.0 |
 | url_score | 0.44 |
 | punctuation_score | 0.9 |
-| bad_chars_score | 1 |
+| singular_chars_score | 1 |
 | numbers_score | 0.56 |
 | repeated_score | 1 |
 
-This text seems to be mostly made of short segments (note the very low values for _big_segments_score_ and _largest_segments_score_) and, according to the language identifier, with a part of the segments not in the document language. Because of this, the basic score is already low: 
+This text seems to be mostly made of short segments (note the very low values for _long_segments_score_ and _superlong_segments_score_) and, according to the language identifier, with a part of the segments not in the document language. Because of this, the basic score is already low: 
 
 |basic score| Result |
 |---|---|
 |8 * 0.8 + 0.1 + 0| 6.5 |
 
 
-The document does not seem to have bad punctuation or bad characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and URLs. This has a high impact on the _penalty_score_ value:
+The document does not seem to have bad punctuation or too many singular characters, and it does not contain repeated sentences. However, it has an excess of numeric characters and URLs. This has a high impact on the _penalty_score_ value:
 
 |penalty score| Result |
 |---|---|
@@ -196,15 +196,15 @@ The main script, it will create a csv for each jsonl present in the input direct
 - `text`: text of the document. Segments must be separated by _\n_.
 
 The output csvs will contain the next columns. The final score will always be considered the _WDS_score_:
-- quality_score
+- WDS_score
 - language_score
 - url_score
 - punctuation_score
-- bad_chars_score
+- singular_chars_score
 - numbers_score
 - repeated_score
-- n_big_segments_score
-- great_segment_score
+- n_long_segments_score
+- superlong_segment_score
 
 #### Parameters
 - ```input```: directory with jsonl files provided by the language identifier
@@ -237,7 +237,7 @@ It is needed a directory with the `docscorer.py` output.
 
 #### language_adaptation/extract_ratios.py
 
-This script extracts the median ratios of numbers, punctuation and bad characters which are used to process the language adaptation from a sample of documents. The input data must consists in a jsonl file for every language with the structure of HPLT 1.2v. The selected data must be representative, diverse and comparable.
+This script extracts the median ratios of numbers, punctuation and singular characters which are used to process the language adaptation from a sample of documents. The input data must consists in a jsonl file for every language with the structure of HPLT 1.2v. The selected data must be representative, diverse and comparable.
 
 #### Parameters 
 - ```input```: directory with jsonl files they must have the HPLT 1.2v like structure regarding keys and values.
@@ -253,7 +253,7 @@ The _penalty_score_  is obtained with `docscorer.custom_mean()` . The subscores 
   *  _urls_score_
   * _numbers_score_
   * _punctuation_score_
-  * _bad_chars_score_
+  * _singular_chars_score_
   * _repeated_score_
 
 The _penalty_score_ ranges on a scale from 0 (the document is severely penalized and gets a final _WDS_score_ of 0) to 1 (no penalization is applied).
@@ -275,14 +275,14 @@ The _language_score_ is processed with `docscorer.score_lang()`. It uses the inf
 
 Segments below a certain length threshold are not taken into account to this metric, so this score is not sensitive to short segments (which often  to header or footer menus, social media listings, partners listings, etc.) These strings are troublesome for language identifiers as they are usually classified as English or other random language. The length threshold is different for each language. For example, 25 is considered the minimum acceptable number of characters for taking Spanish segments into account for this metric.
 
-### big_segments_score and largest_segments_score
+### long_segments_score and superlong_segments_score
 
-These two metrics are obtained with `docscorer.score_big_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
+These two metrics are obtained with `docscorer.score_long_texts()`.  They get values between 0 and 1 that aim at determining the presence of large groups of alphabetic characters in the correct language. 
 
-Regarding the _big_segments_score_, a document receives 0.1 score points for every large segment, up to a maximum score of 1. The length of what we consider a 'large segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](#adaptating-subscores-to-different-languages) section.
+Regarding the _long_segments_score_, a document receives 0.1 score points for every long segment, up to a maximum score of 1. The length of what we consider a 'long segment' depends on each language and is measured using alphabetic characters. In Spanish, we set the minimum number of alphabetic characters to 250 but in English, for example, the minimum is 232. For more details about language adaptation see the [Adapting subscores to different languages](#adaptating-subscores-to-different-languages) section.
 <!-- [MBG] Consider  normalizing this value with the length of the document, in order to avoid penalizing short documents. -->
 
-On the other hand, the _largest_segments_score_ is used to measure whether a document contains at least one very large segment. The lenght of what we consider a 'very large segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _largest_segments_score_ will be 0. If there is more than one of these segments (inside both thresholds), we use an average of their lengths to calculate the value.
+On the other hand, the _superlong_segments_score_ is used to measure whether a document contains at least one very long segment. The lenght of what we consider a 'very long segment' is also language-dependent. In Spanish, a segment of this kind has between 625 and 1000 alphabetic characters. Depending on the lenght, we assign a value from 0 to 1. If a segment containing 1000 alphabetic characters (or more) is found in a Spanish document, it will receive a score of 1. Likewise, if a document only contains segments with 625 or less alphabetic characters, the resulting _superlong_segments_score_ will be 0. If there is more than one of these segments (inside both thresholds), we use an average of their lengths to calculate the value.
 
 ### urls_score
 
@@ -339,15 +339,15 @@ Again, this metric and its threshold are lineal and  language-dependent. In Span
 
 Note that not only too much punctuation is problematic, but also too few, usually caused by documents that consist of product lists, tags, SEO phrases, etc.
 
-### bad_chars_score
+### singular_chars_score
 
-This subscores is processed with `docscorer.score_bad_chars()`, and it's used to penalize texts with undesired characters (such as emojis, separators, ...):
+This subscores is processed with `docscorer.score_singular_chars()`, and it's used to penalize texts with undesired characters (such as emojis, separators, ...):
 
-`bad_characters / alphabetic_characters * 100`
+`singular_characters / alphabetic_characters * 100`
 
 This score and its thresholds are lineal and language-dependent. In Spanish, for example, the score distribution is as follows:
 
-| Bad chars score  |    Percentage      |
+| Singular chars score  |    Percentage      |
 |---|---|
 | 1 | <1% |
 | 1 → 0.7 | 1% → 2% |
@@ -363,12 +363,12 @@ The _repeated_score_ score is processed with `doscorer.score_repeated()`, and it
 
 This gets processed in `language_adaptation.extract_ratios()`and `docscorer`.
 
-Some of the subscores used to get the _quality_score_ are based on ratios that need to be computed for each language for optimal performance:
+Some of the subscores used to get the _WDS_score_ are based on ratios that need to be computed for each language for optimal performance:
   * _punctuation_score_
-  * _bad_chars_score_
+  * _singular_chars_score_
   * _numbers_score_
-  * _big_segments_score_
-  * _largest_segments_score_ 
+  * _long_segments_score_
+  * _very_long_segments_score_ 
 Also the 'short segments' threshold, indicating the minimum amount of characters that a segment must have in order to being taken into account, is language-dependent.
 
 In our experiments, as a first approach, we stablished the desidered ratios and thresholds for each indicator for the Spanish language, by using a sample  from HPLT v1.2. These ratios are valid for this language only, so an adaptation method is needed for other languages.
@@ -381,7 +381,7 @@ sum(correct_word_characters * language_probability) / sum(correct_word_character
 (500 * 0.9 + 25 * 0.4) / (500 + 25 + 10) * 10 = 8.6
 ```
 
-Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, bad characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
+Using these random samples of 10k documents, we selected the 50% best scored documents to extract their ratios for punctuation, singular characters and numbers. The medians of ratios, that we will need for each subscore, were computed with `language_adaptation/extract_ratios.py` and then stored in `language_adaptation/medians_language.csv`. Finally, these medians are used in the main script (`docscorer.py`) in order to adapt ratios to every language.
 
 Applying the Spanish ratio-score equivalences to other languages, which can be highly different, produces innacurate _WDS_scores_. The histograms below show an example in Korean, where documents that look good got penalized. The samples in the pictures are processed with the same ratio-score equivalences that we showed in the table of [_punctuation_score_](#punctuation_score):
 
@@ -392,7 +392,7 @@ Aiming at solving this problem, we decided to use medians as a point of referenc
 
 ![alt text](example/korean_adapted.png)
 
-Using another example, the median of both Russian and Spanish for bad characters is the same (0.8), so no adjustments are needed. However, for punctuation, the median is different: 3.2 for Russian and 2.4 in Spanish. In this case, adjustments are indeed needed. The main script uses, again, a cross-multiplication to solve this and set more appropiate values for Russian. If we consider the _punctuation_score_ table (see table below), in Spanish a ratio between **0.9** and **2.5** is mandatory to get a perfect document (_punctuation_score_ = 1). With the cross-multiplication conversion, we can fit a better benchmark for non penalized documents:
+Using another example, the median of both Russian and Spanish for singular characters is the same (0.8), so no adjustments are needed. However, for punctuation, the median is different: 3.2 for Russian and 2.4 in Spanish. In this case, adjustments are indeed needed. The main script uses, again, a cross-multiplication to solve this and set more appropiate values for Russian. If we consider the _punctuation_score_ table (see table below), in Spanish a ratio between **0.9** and **2.5** is mandatory to get a perfect document (_punctuation_score_ = 1). With the cross-multiplication conversion, we can fit a better benchmark for non penalized documents:
 
 `(3.2 * 0.9) / 2.4 = 1.2`
 
@@ -414,11 +414,11 @@ As a result, the adapted table for Russian regarding the _punctuation_score_ is 
 | 0 | <0.3 | <0.4 |
 
 
-Note that not only the relative values are adapted (_punctuation_score_, _bad_chars_score_, _numbers_score_): some absolute values do also  need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _big_segments_score_, _largest_segments_score_ and what we called 'short segments' (the length threshold used to ignore short segments when computing some of the scores). For example, in Spanish we use 1000 alphabetic characters as a threshold for _largest_segments_score_,  with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters are enough, according to the inverse cross-multiplication:
+Note that not only the relative values are adapted (_punctuation_score_, _singular_chars_score_, _numbers_score_): some absolute values do also  need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _long_segments_score_, _largest_segments_score_ and what we called 'short segments' (the length threshold used to ignore short segments when computing some of the scores). For example, in Spanish we use 1000 alphabetic characters as a threshold for _largest_segments_score_,  with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters are enough, according to the inverse cross-multiplication:
 
 `2.4 * 1000 / 6.5`
 
-The inverse cross-multiplication is used because the relationship between punctuation and alphabetic characters is inversely proportional. A language that normally uses less alphabetic characters than other will have a bigger ratio of punctuation. For example, in our test sample, German has a punctuation ratio of 2.8, this means that every punctuation mark usually needs 36 alphabetic characters (100/2.8 ≈ 36). In Chinese we found a ratio of 9.9, 10 alphabetic characters are thus needed every 10 alphabetic characters. We use the punctuation as a point of reference to extract the average alphabetic characters of the language, so we can obtain the conversion of what we called big or very big segments.
+The inverse cross-multiplication is used because the relationship between punctuation and alphabetic characters is inversely proportional. A language that normally uses less alphabetic characters than other will have a bigger ratio of punctuation. For example, in our test sample, German has a punctuation ratio of 2.8, this means that every punctuation mark usually needs 36 alphabetic characters (100/2.8 ≈ 36). In Chinese we found a ratio of 9.9, 10 alphabetic characters are thus needed every 10 alphabetic characters. We use the punctuation as a point of reference to extract the average alphabetic characters of the language, so we can obtain the conversion of what we called long or superlong segments.
 
 In case the analysed language is not present in `language_adaptation/medians_language.csv`, we use the average ratio of the other languages in the csv.
 
@@ -431,7 +431,7 @@ In case the analysed language is not present in `language_adaptation/medians_lan
 |---|---|---|
 |numeric character|Numbers in many languages|0030-0039, 0660-0669, 06F0-06F9, 0964-096F, 09F2-09F9, 0B66-0B77, 0BE6-0BFA, 0C66-0C6F, 0C78-0C7E, 0CE6-0CEF, 0D66-0D79, 0DE6-0DEF, 0E50-0E5B, 0EC0-0ED9, 1040-1049, 1090-1099, 1369-137C, 17E0-17E9, 1810-1819, 19D0-19DA, 1A80-1A99, 1B50-1B59, 1C40-1C49, 1C50-1C59, A830-A839, A8D0-A8D9, AA50-AA59|
 |punctuation character|Most frequent linguistic punctuation|0021-0022, 0027-0029, 002C-002E, 003A-003B, 003F, 005B, 005D, 0060, 00A1, 00B4-00B5, 00B7, 00BF,0589-05C7, 0600-061F, 066A-066D, 06D4-06ED, 0700-070F, 1360-1368, 1800-180A, 1AB0-1AFF, 1C78-1C7F, 1CC0-1CC7, 1FBD-1FC1, 1FCD-1FCF, 1FDD-1FDF, 1FED-1FEF, 1FFD-2027, 3000-303F, 4DC0-4DFF, A6F0-A6F7, FE10-FE6F|
-|bad character|Non typical linguistic punctuation, emojis, separators, etc.|0023-0026, 002A-002B, 002F, 003C-003E, 0040, 005C, 007C, 007E, 00A2-00B3, 00B8-00BE, 00D7, 00F7, 02B0-0385, 0483-0489, 0559-055F, 2010-2E52, 10000-1FFFF, A670-A67F, 3200-33FF|
+|singular character|Non typical linguistic punctuation, emojis, separators, etc.|0023-0026, 002A-002B, 002F, 003C-003E, 0040, 005C, 007C, 007E, 00A2-00B3, 00B8-00BE, 00D7, 00F7, 02B0-0385, 0483-0489, 0559-055F, 2010-2E52, 10000-1FFFF, A670-A67F, 3200-33FF|
 |space character|White spaces, tabulations, new lines, etc.|0000-0020, 007F-00A0, 2B7E, 008A, 0088|
 |alphabetic character|Characters that are used to create lexical units or words| Any character not in the other groups |
 
