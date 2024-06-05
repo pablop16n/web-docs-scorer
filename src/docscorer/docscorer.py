@@ -11,7 +11,11 @@ import pandas as pd
 import re
 import json
 import sys
-from utils import average, precision_round, join_utf_blocks, custom_mean
+
+try:
+    from .utils import average, precision_round, join_utf_blocks, custom_mean
+except ImportError:
+    from utils import average, precision_round, join_utf_blocks, custom_mean
 
 
 
