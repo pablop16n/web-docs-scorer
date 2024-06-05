@@ -1,6 +1,6 @@
 """
 Usage:
-  crawled_text_qualifier.py --input=<dir> --output=<dir>
+  extract_ratios.py --input=<dir> --output=<dir>
 
 """
 
@@ -20,7 +20,7 @@ args = docopt.docopt(__doc__, version='printbook v 1.0')
 
 
 ## _____ CHARS DETECTION _______________________________________________________________________________________________________________
-BAD_CHARS = ["0023-0026", "002A-002B", "002F-002F", "003C-003E", "0040-0040", "005C-005C", "007C-007C", "007E-007E", "00A2-00B3", "00B8-00BE", "00D7-00D7", "00F7-00F7", "02B0-0385", "0483-0489", "0559-055F", "2010-2E52", "10000-1FFFF", "A670-A67F", "3200-33FF"]
+SINGULAR_CHARS = ["0023-0026", "002A-002B", "002F-002F", "003C-003E", "0040-0040", "005C-005C", "007C-007C", "007E-007E", "00A2-00B3", "00B8-00BE", "00D7-00D7", "00F7-00F7", "02B0-0385", "0483-0489", "0559-055F", "2010-2E52", "10000-1FFFF", "A670-A67F", "3200-33FF"]
 
 PUNCTUATION_CHARS = ["0021-0022", "0027-0029", "002C-002E", "003A-003B", "003F-003F", "005B-005B", "005D-005D", "0060-0060", "00A1-00A1", "00B4-00B5", "00B7-00B7", "00BF-00BF","0589-05C7", "0600-061F", "066A-066D", "06D4-06ED", "0700-070F", "1360-1368", "1800-180A", "1AB0-1AFF", "1C78-1C7F", "1CC0-1CC7", "1FBD-1FC1", "1FCD-1FCF", "1FDD-1FDF", "1FED-1FEF", "1FFD-2027", "3000-303F", "4DC0-4DFF", "A6F0-A6F7", "FE10-FE6F"]
 
@@ -38,9 +38,9 @@ def join_utf_blocks(u_list, inverse=False):
     return re.compile(f"{pattern}]")
     
 numbers_pattern = join_utf_blocks(NUMBERS)
-bad_chars_pattern = join_utf_blocks(BAD_CHARS)
+singular_chars_pattern = join_utf_blocks(SINGULAR_CHARS)
 punctuation_pattern = join_utf_blocks(PUNCTUATION_CHARS)
-alpha_pattern = join_utf_blocks(BAD_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True)
+alpha_pattern = join_utf_blocks(SINGULAR_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True)
 #alphabetic chars are considered by default
 spaces_pattern = join_utf_blocks(SPACES)
 
@@ -50,10 +50,10 @@ def score_numbers(word_chars, numbers):
         return 0
     return round((numbers/word_chars)*100, 1)
 
-def score_bad_chars(word_chars, bad_chars):
+def score_singular_chars(word_chars, singular_chars):
     if word_chars <= 0:
         return 0
-    return round((bad_chars/word_chars)*100, 1)
+    return round((singular_chars/word_chars)*100, 1)
 
 def score_punctuation(word_chars, punctuation_chars):
     if word_chars <= 0:
@@ -93,13 +93,13 @@ output_path=args['--output']
 if( not os.path.exists(output_path)):
     print(f"Directory {output_path} not found")
     sys.exit(-1)
-df_medians = pd.DataFrame(columns=["language", "language_score", "numbers_score", "punctuation_score", "bad_chars_score"])
+df_medians = pd.DataFrame(columns=["language", "language_score", "numbers_score", "punctuation_score", "singular_chars_score"])
 writing_path = os.path.join(output_path, "medians_language.csv")
 for json_f in os.listdir(input_path):
     if json_f.endswith(".jsonl"):
         documents = os.path.join(input_path, json_f)
         file_name = os.path.splitext(os.path.basename(json_f))[0]
-        df = pd.DataFrame(columns=["language_score", "numbers_ratio", "punctuation_ratio", "bad_chars_ratio"])
+        df = pd.DataFrame(columns=["language_score", "numbers_ratio", "punctuation_ratio", "singular_chars_ratio"])
 
         i = 0
         print(f"Processing: {file_name}")
@@ -109,25 +109,25 @@ for json_f in os.listdir(input_path):
         with open(documents, "r", encoding="utf-8") as file:
             for document in file:
                 document = json.loads(document)
-                condensed_data = [(len(re.findall(alpha_pattern, segment)), len(re.findall(punctuation_pattern, segment)), len(re.findall(bad_chars_pattern, segment)), 
+                condensed_data = [(len(re.findall(alpha_pattern, segment)), len(re.findall(punctuation_pattern, segment)), len(re.findall(singular_chars_pattern, segment)), 
                     len(re.findall(numbers_pattern, segment))) for segment in document["text"].split("\n")]
                 word_chars = [x[0] for x in condensed_data]
                 punctuation_chars = sum(x[1] for x in condensed_data)
-                bad_chars = sum(x[2] for x in condensed_data)
+                singular_chars = sum(x[2] for x in condensed_data)
                 numbers_chars = sum(x[3] for x in condensed_data)
                 
                 language_score = score_lang(document["document_lang"], document["langs"], document["scores"], word_chars)
                 numbers_score = score_numbers(sum(word_chars), numbers_chars)
-                punctuation_score = score_bad_chars(sum(word_chars), punctuation_chars)
-                bad_chars_score = score_bad_chars(sum(word_chars), bad_chars)
+                punctuation_score = score_singular_chars(sum(word_chars), punctuation_chars)
+                singular_chars_score = score_singular_chars(sum(word_chars), singular_chars)
 
-                df.loc[document["id"]] = [language_score, numbers_score, punctuation_score, bad_chars_score]
+                df.loc[document["id"]] = [language_score, numbers_score, punctuation_score, singular_chars_score]
                 
                 i+=1
                 if i % 10000 == 0:
                     print(f"{document['document_lang']} - {i}/{n_lines}")
         
         df = df.sort_values(by=["language_score"], ascending=True).iloc[round(df.shape[0]*0.8):]
-        df_medians.loc[df_medians.shape[0]] = [document["document_lang"], df.language_score.median(), df.numbers_ratio.median(), df.punctuation_ratio.median(), df.bad_chars_ratio.median()]
+        df_medians.loc[df_medians.shape[0]] = [document["document_lang"], df.language_score.median(), df.numbers_ratio.median(), df.punctuation_ratio.median(), df.singular_chars_ratio.median()]
 df_medians.to_csv(writing_path)
 print(f"Saved results in '{writing_path}'")

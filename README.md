@@ -38,7 +38,7 @@ In order to give a **_WDS_score_** to a document, the WDS computes several subsc
 |---|---|---|
 | language_score | ratio of [alphabetic characters](#glossary) in the correct language vs. total characters | 0 - 10 | 
 | long_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
-| largest_segments_score | length of largest text segments | 0 - 1 | 
+| superlong_segments_score | length of superlong text segments | 0 - 1 | 
 | urls_score | ratio of URLs vs. total segments | 0 - 1 | 
 | numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | punctuation_score | ratio of [punctuation characters](#glossary) vs. alphabetic characters| 0 - 1 | 
@@ -115,7 +115,7 @@ As explained in the section above, the **_WDS_score_** of the document is comput
 
 **WDS score** = 9.32 x 0,88 = **8.2** 
 
-This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_largest_segment_score_ = 1/1), because there is almost one 'very long segment', but it only contains 4 'long segments' (_long_segments_score_ = 0.4/1). For Italian we consider 'superlong segments' those with more than 1208 alphabetic characters and to be considered a 'long segment' almost 302 alphabetic characters are needed. For more information about these scores see the [long_segments_score and superlong_segments_score](#adapting-subscores-to-different-languages) sections.
+This means that the previous example is a good document (**_WDS_score_** = 8.2/10), that is clearly in Italian (_language_score_ = 9.9/10). It probably contains a considerable amount of textual data in some segments (_superlong_segment_score_ = 1/1), because there is almost one 'very long segment', but it only contains 4 'long segments' (_long_segments_score_ = 0.4/1). For Italian we consider 'superlong segments' those with more than 1208 alphabetic characters and to be considered a 'long segment' almost 302 alphabetic characters are needed. For more information about these scores see the [long_segments_score and superlong_segments_score](#adapting-subscores-to-different-languages) sections.
 
 The document does not contain enough URLs, punctuation or singular characters noise to be penalized because of it (_url_score_ = 1/1, _punctuation_score_ = 1/1, _singular_chars_score_ = 1/1). It contains a small excess of numbers (_numbers_score_ = 0.92/1), which could be due to the presence of a calendar present in the text:
 
@@ -414,7 +414,7 @@ As a result, the adapted table for Russian regarding the _punctuation_score_ is 
 | 0 | <0.3 | <0.4 |
 
 
-Note that not only the relative values are adapted (_punctuation_score_, _singular_chars_score_, _numbers_score_): some absolute values do also  need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _long_segments_score_, _largest_segments_score_ and what we called 'short segments' (the length threshold used to ignore short segments when computing some of the scores). For example, in Spanish we use 1000 alphabetic characters as a threshold for _largest_segments_score_,  with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters are enough, according to the inverse cross-multiplication:
+Note that not only the relative values are adapted (_punctuation_score_, _singular_chars_score_, _numbers_score_): some absolute values do also  need to be more flexible depending on the language. For example, punctuation ratios are used to adapt the values of _long_segments_score_, _superlong_segments_score_ and what we called 'short segments' (the length threshold used to ignore short segments when computing some of the scores). For example, in Spanish we use 1000 alphabetic characters as a threshold for _superlong_segments_score_,  with a median of 2.4 in punctuation characters. However, in Japanese, with a median of 6.5, 369 characters are enough, according to the inverse cross-multiplication:
 
 `2.4 * 1000 / 6.5`
 

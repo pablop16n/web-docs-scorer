@@ -1,6 +1,6 @@
 """
 Usage:
-  qualifications_score_charts.py --input=<dir> --output=<dir>
+  wds_score_charts.py --input=<dir> --output=<dir>
 
 """
 
@@ -36,16 +36,16 @@ for file in os.listdir(input_path):
     data_list = []
     for n in range(101):
         i = n/10
-        data_in_frame = df[(df.qualification_score>round(i-0.1, 1))&(df.qualification_score<=i)]
+        data_in_frame = df[(df.wds_score>round(i-0.1, 1))&(df.wds_score<=i)]
         language_score = round(data_in_frame.language_score.mean(), 2)
         url_score = round(data_in_frame.url_score.mean()/10, 2)
         punctuation_score = round(data_in_frame.punctuation_score.mean()/10, 2)
-        bad_chars_score = round(data_in_frame.bad_chars_score.mean()/10, 2)
+        singular_chars_score = round(data_in_frame.singular_chars_score.mean()/10, 2)
         numbers_score = round(data_in_frame.numbers_score.mean()/10, 2)
         repeated_score = round(data_in_frame.repeated_score.mean()/10, 2)
-        n_big_segments_score = round(data_in_frame.n_big_segments_score.mean()/10, 2)
+        n_long_segments_score = round(data_in_frame.n_long_segments_score.mean()/10, 2)
         great_segment_score = round(data_in_frame.great_segment_score.mean()/10, 2)
-        data_list.append([i, data_in_frame.shape[0], f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {bad_chars_score}, {numbers_score}, {repeated_score}, {n_big_segments_score}, {great_segment_score})"])
+        data_list.append([i, data_in_frame.shape[0], f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {singular_chars_score}, {numbers_score}, {repeated_score}, {n_long_segments_score}, {great_segment_score})"])
     
     
     if is_first:
@@ -116,19 +116,19 @@ html = """
             return '#' + hexR + hexG + hexB;
         }
         
-        function cstm(qualificationScore, languageScore, urlgeScore, punctScore, badCharsScore, numbersScore, spamScore, nBigSegmentsScore, greatSegmentScore) {
+        function cstm(wdsScore, languageScore, urlgeScore, punctScore, singularCharsScore, numbersScore, spamScore, nLongSegmentsScore, greatSegmentScore) {
           return '<div style="padding:5px;">' +
               '<table>' + '<tr>' +
               '<th style="border-bottom: solid 1px; padding-bottom: 5px; text-transform: uppercase;">Scores</th>' + '</tr>' + '<tr>' +
-              '<td><b>Qualification score: </b><span>' + qualificationScore + '</span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Web Document Score: </b><span>' + wdsScore + '</span></td>' + '</tr>' + '<tr>' +
               '<td><b>Language score: </b><span class="score">' + languageScore + '<span class="color" style="background-color: ' + colorLanguageScore(languageScore, 1, 10) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>URL score: </b><span class="score">' + urlgeScore + '<span class="color" style="background-color: ' + colorLanguageScore(urlgeScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Punctuation score: </b><span class="score">' + punctScore + '<span class="color" style="background-color: ' + colorLanguageScore(punctScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Bad chars score: </b><span class="score">' + badCharsScore + '<span class="color" style="background-color: ' + colorLanguageScore(badCharsScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Singular chars score: </b><span class="score">' + singularCharsScore + '<span class="color" style="background-color: ' + colorLanguageScore(singularCharsScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Numbers score: </b><span class="score">' + numbersScore + '<span class="color" style="background-color: ' + colorLanguageScore(numbersScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Repeated score: </b><span class="score">' + spamScore + '<span class="color" style="background-color: ' + colorLanguageScore(spamScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Big segments score: </b><span class="score">' + nBigSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nBigSegmentsScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
-              '<td><b>Largest segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '</table>' + '</div>';
+              '<td><b>Long segments score: </b><span class="score">' + nLongSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nLongSegmentsScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
+              '<td><b>Superlong segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '</table>' + '</div>';
         }      
         
         
@@ -149,7 +149,7 @@ html = """
 
       function drawColumnChart(data) {
         var options = {
-          title: 'Score of qualification',
+          title: 'Web Docs Score',
           legend: { position: 'none' },
           colors: ['#FFA633'],
           tooltip: { isHtml: true } // Habilitar tooltip con HTML
@@ -239,7 +239,7 @@ html = html.replace("__DATA0__", text0)
 html = html.replace("__DATA1__", text1+"\n}")
 html = html.replace("__DATA2__", text2)
 
-with open(os.path.join(output_path, "qualifier_scores.html"), "w", encoding="utf8") as file:
+with open(os.path.join(output_path, "wds_scores.html"), "w", encoding="utf8") as file:
     file.write(html)
 
     

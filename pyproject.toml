@@ -41,8 +41,6 @@ Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 "Prompsit Language Engineering" = "http://www.prompsit.com"
 "HPLT Project" = "https://hplt-project.org"
 
-[tool.setuptools]
-py-modules = ['docscorer']
 
 [tool.setuptools.package-data]
-docscorer = [ "language_adaption/medians_language.csv"]
+docscorer = [ "language_adaption/*.csv"]
