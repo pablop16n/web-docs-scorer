@@ -70,7 +70,7 @@ def score_lang(ref_language, lang_segments, scores_lang, word_chars):
     for n in range(len(lang_segments)):
         if word_chars[n] <= 20:
             continue
-        elif lang_segments[n] == ref_language:
+        elif lang_segments[n].split("_")[0] == ref_language:
             correct_lang_chars += word_chars[n]
             correct_lang_chars_score += word_chars[n] * scores_lang[n]
         else:
