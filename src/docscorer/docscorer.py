@@ -157,7 +157,7 @@ class DocumentScorer:
 
 
     def __score_urls(self, ref_language, document, word_chars):
-        menu_length = self.MENUS_AVERAGE_LENGTH[ref_language] if ref_language in self.MENUS_AVERAGE_LENGTH else MENUS_AVERAGE_LENGTH["standard"]
+        menu_length = self.MENUS_AVERAGE_LENGTH[ref_language] if ref_language in self.MENUS_AVERAGE_LENGTH else self.MENUS_AVERAGE_LENGTH["standard"]
         n_segments = len([x for x in word_chars if x > menu_length])
         if n_segments == 0:
             return 10
