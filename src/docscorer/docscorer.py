@@ -335,7 +335,7 @@ class DocumentScorer:
         
         long_segments = []
         for n in range(len(word_chars)):
-            if lang_segments[n].split("_")[0] == ref_language and word_chars[n] >self.LONG_TEXT_MIN:
+            if lang_segments[n].split("_")[0] == self.ref_language and word_chars[n] >self.LONG_TEXT_MIN:
                 useful_chars = self.LONG_TEXT_MAX if word_chars[n] > self.LONG_TEXT_MAX else word_chars[n]
                 score = round((useful_chars - self.LONG_TEXT_MIN) / (self.LONG_TEXT_MAX - self.LONG_TEXT_MIN) * 10 , 1)
                 long_segments.append(score)
@@ -372,7 +372,7 @@ class DocumentScorer:
             
         
         score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10])
-        return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1)]#, document] #comment document if text is not wanted
+        return [float(round(score, 1) if score <= 10 else 10), float(round(language_score, 1)), float(round(url_score, 1)), float(round(punctuation_score, 1)), float(round(singular_chars_score, 1)), float(round(numbers_score, 1)), float(round(repeated_score, 1)), float(round(long_segments_scores[0], 1)), float(round(long_segments_scores[1], 1))]#, document] #comment document if text is not wanted
 
 
     def score_document(self, raw_document, only_final_score=False):
