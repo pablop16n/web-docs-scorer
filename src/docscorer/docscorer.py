@@ -23,8 +23,10 @@ class DocumentScorer:
     def __init__(self, target_language,   config=os.path.dirname(__file__)+"/language_adaption/medians_language.csv"):
     ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________
         df_lang_adaption = pd.read_csv(config)
+
+        self.ref_language = target_language.split("_")[0]
         
-        if len(target_language)==2:
+        if len(self.ref_language)==2:
             df_lang_adaption.set_index("language", inplace=True)
             ref_langcode="es"
         else:
@@ -32,8 +34,8 @@ class DocumentScorer:
             ref_langcode="spa"
 
         LANGUAGES = df_lang_adaption.index       
-        
-        self.ref_language = target_language
+
+
 
         ## _____ REFERENCE RATIO VALUES FOR SPANISH ________________________________________________________________________________________________
         #Current values in the provided csv 
@@ -67,10 +69,10 @@ class DocumentScorer:
         ref_punctuation = round(df_lang_adaption.loc[ref_langcode]["punctuation_score"], 1)
         ref_singular_chars = round(df_lang_adaption.loc[ref_langcode]["singular_chars_score"], 1)
     
-        if target_language in LANGUAGES:
-            LANGUAGES_NUMBERS = round(df_lang_adaption.loc[target_language]["numbers_score"], 1)
-            LANGUAGES_PUNCTUATION = round(df_lang_adaption.loc[target_language]["punctuation_score"], 1) 
-            LANGUAGES_SINGULAR_CHARS = round(df_lang_adaption.loc[target_language]["singular_chars_score"], 1)
+        if self.ref_language in LANGUAGES:
+            LANGUAGES_NUMBERS = round(df_lang_adaption.loc[self.ref_language]["numbers_score"], 1)
+            LANGUAGES_PUNCTUATION = round(df_lang_adaption.loc[self.ref_language]["punctuation_score"], 1) 
+            LANGUAGES_SINGULAR_CHARS = round(df_lang_adaption.loc[self.ref_language]["singular_chars_score"], 1)
     
             ## MENUS ADAPTION
             self.MENUS_AVERAGE_LENGTH = round(ref_punctuation * menu_length / LANGUAGES_PUNCTUATION)
