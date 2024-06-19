@@ -372,7 +372,15 @@ class DocumentScorer:
             
         
         score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10])
-        return [float(round(score, 1) if score <= 10 else 10), float(round(language_score, 1)), float(round(url_score, 1)), float(round(punctuation_score, 1)), float(round(singular_chars_score, 1)), float(round(numbers_score, 1)), float(round(repeated_score, 1)), float(round(long_segments_scores[0], 1)), float(round(long_segments_scores[1], 1))]#, document] #comment document if text is not wanted
+        return [float(round(score, 1) if score <= 10 else 10), 
+                float(round(language_score, 1)),
+                float(round(url_score, 1)),
+                float(round(punctuation_score, 1)), 
+                float(round(singular_chars_score, 1)), 
+                float(round(numbers_score, 1)),
+                float(round(repeated_score, 1)),
+                float(round(long_segments_scores[0], 1)),
+                float(round(long_segments_scores[1], 1))]#, document] #comment document if text is not wanted
 
 
     def score_document(self, raw_document, only_final_score=False):
