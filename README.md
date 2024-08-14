@@ -43,7 +43,9 @@ In order to give a **_WDS_score_** to a document, the WDS computes several subsc
 | numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | punctuation_score | ratio of [punctuation characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | singular_chars_score | ratio of [singular characters](#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
-| repeated_score | ratio of repeated segments | 0 - 1 | 
+| repeated_score | ratio of repeated segments | 0 - 1 |
+
+All scores are in **rescaled to a 0-10 base in the final outputs**.
 
 A detailed description about these subscores is given in section [Computing subscores](#computing-subscores). 
 
