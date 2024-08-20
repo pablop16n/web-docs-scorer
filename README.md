@@ -37,13 +37,13 @@ In order to give a **_WDS_score_** to a document, the WDS computes several subsc
 | Subcore  |  Based on   |  Scale   | 
 |---|---|---|
 | language_score | ratio of [alphabetic characters](#glossary) in the correct language vs. total characters | 0 - 10 | 
-| long_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
-| superlong_segments_score | length of superlong text segments | 0 - 1 | 
 | urls_score | ratio of URLs vs. total segments | 0 - 1 | 
-| numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | punctuation_score | ratio of [punctuation characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | singular_chars_score | ratio of [singular characters](#glossary) (emojis, non word punctuation, separators, etc.) vs. alphabetic characters | 0 - 1 | 
+| numbers_score | ratio of [numeric characters](#glossary) vs. alphabetic characters| 0 - 1 | 
 | repeated_score | ratio of repeated segments | 0 - 1 |
+| long_segments_score | amount of long segments (alphabetic characters) | 0 - 1 | 
+| superlong_segments_score | length of superlong text segments | 0 - 1 | 
 
 All scores are in **rescaled to a 0-10 base in the final outputs**.
 
@@ -101,13 +101,13 @@ From this document, we get these subscores:
 | Subcores  |    Value      |
 |---|---|
 | language_score | 9.9 |
-| long_segments_score | 0.4 |
-| superlong_segments_score | 1.0 |
 | url_score | 1.0 |
 | punctuation_score | 1.0 |
 | singular_chars_score | 1.0 |
 | numbers_score | 0.92 |
 | repeated_score | 0.96 |
+| long_segments_score | 0.4 |
+| superlong_segments_score | 1.0 |
 
 As explained in the section above, the **_WDS_score_** of the document is computed by using these subscores values:
 
@@ -156,13 +156,13 @@ We compute the subscores:
 | Subscore  |    Value      |
 |---|---|
 | language_score | 8.0 |
-| long_segments_score | 0.1 |
-| superlong_segments_score | 0.0 |
 | url_score | 0.44 |
 | punctuation_score | 0.9 |
 | singular_chars_score | 1 |
 | numbers_score | 0.56 |
 | repeated_score | 1 |
+| long_segments_score | 0.1 |
+| superlong_segments_score | 0.0 |
 
 This text seems to be mostly made of short segments (note the very low values for _long_segments_score_ and _superlong_segments_score_) and, according to the language identifier, with a part of the segments not in the document language. Because of this, the basic score is already low: 
 
