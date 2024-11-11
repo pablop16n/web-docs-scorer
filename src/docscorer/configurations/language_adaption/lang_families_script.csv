@@ -1,0 +1,394 @@
+language_2_chars,language_3_chars,family,genus,script
+aa,aar,Afro-Asiatic,Lowland East Cushitic,Latn
+ab,abk,Northwest Caucasian,Northwest Caucasian,Cyrl
+ab,abk,Northwest Caucasian,Northwest Caucasian,Latn
+ab,abk,Northwest Caucasian,Northwest Caucasian,Geor
+,ace,Austronesian,Malayo-Sumbawan,Latn
+,ady,Northwest Caucasian,Northwest Caucasian,Cyrl
+af,afr,Indo-European,Germanic,Arab
+af,afr,Indo-European,Germanic,Latn
+ak,aka,Niger-Congo,Tano,Latn
+,alt,Altaic,Turkic,Cyrl
+,alt,Altaic,Turkic,Latn
+am,amh,Afro-Asiatic,Semitic,Ethi
+ar,ara,Afro-Asiatic,Semitic,Arab
+ar,arb,Afro-Asiatic,Semitic,Arab
+es,arg,Indo-European,Romance,Latn
+as,asm,Indo-European,Indic,Beng
+,ast,Indo-European,Romance,Latn
+av,ava,Nakh-Daghestanian,Avar-Andic-Tsezic,Cyrl
+ae,ave,Indo-European,Iranian,Deva
+,awa,Indo-European,Indic,Deva
+,awa,Indo-European,Indic,Kthi
+ay,aym,Aymaran,Aymaran,Latn
+,ayr,Aymaran,Aymaran,Latn
+,azb,Altaic,Turkic,Arab
+,azb,Altaic,Turkic,Cyrl
+,azb,Altaic,Turkic,Latn
+az,aze,Altaic,Turkic,Arab
+az,aze,Altaic,Turkic,Cyrl
+az,aze,Altaic,Turkic,Latn
+az,azj,Altaic,Turkic,Arab
+az,azj,Altaic,Turkic,Cyrl
+az,azj,Altaic,Turkic,Latn
+ba,bak,Altaic,Turkic,Cyrl
+ba,bak,Altaic,Turkic,Latn
+bm,bam,Mande,Western Mande,Latn
+bm,bam,Mande,Western Mande,Nkoo
+,ban,Austronesian,Malayo-Sumbawan,Latn
+,ban,Austronesian,Malayo-Sumbawan,Bali
+,bcl,Austronesian,Greater Central Philippine,Latn
+be,bel,Indo-European,Slavic,Arab
+be,bel,Indo-European,Slavic,Cyrl
+be,bel,Indo-European,Slavic,Latn
+,bem,Niger-Congo,Bantu,Latn
+bn,ben,Indo-European,Indic,Beng
+bn,ben,Indo-European,Indic,Kthi
+,bho,Indo-European,Indic,Deva
+,bho,Indo-European,Indic,Kthi
+bi,bis,Indo-European,Creoles and Pidgins,Latn
+bo,bod,Sino-Tibetan,Bodic,Phag
+bo,bod,Sino-Tibetan,Bodic,Soyo
+bo,bod,Sino-Tibetan,Bodic,Tibt
+bo,bod,Sino-Tibetan,Bodic,Deva
+bs,bos,Indo-European,Slavic,Latn
+bs,bos,Indo-European,Slavic,Arab
+bs,bos,Indo-European,Slavic,Cyrl
+,bqi,Indo-European,Iranian,Arab
+br,bre,Indo-European,Celtic,Latn
+,bug,Austronesian,South Sulawesi,Latn
+bg,bul,Indo-European,Slavic,Cyrl
+ca,cat,Indo-European,Romance,Latn
+,ceb,Austronesian,Greater Central Philippine,Latn
+cs,ces,Indo-European,Slavic,Latn
+ch,cha,Austronesian,Chamorro,Latn
+ce,che,Nakh-Daghestanian,Nakh,Arab
+ce,che,Nakh-Daghestanian,Nakh,Cyrl
+ce,che,Nakh-Daghestanian,Nakh,Latn
+,chg,Altaic,Turkic,Arab
+,chm,Uralic,Mari,Cyrl
+,chn,Penutian,Chinookan,Latn
+,chr,Iroquoian,Southern Iroquoian,Latn
+,chr,Iroquoian,Southern Iroquoian,Cher
+cu,chu,Indo-European,Slavic,Cyrl
+cv,chv,Altaic,Turkic,Cyrl
+,cjk,Niger-Congo,Benue-Congo Plateau,Latn
+,ckb,Indo-European,Iranian,Arab
+,ckb,Indo-European,Iranian,Cyrl
+,ckb,Indo-European,Iranian,Cyrl
+,ckt,Chukotko-Kamchatkan,Northern Chukotko-Kamchatkan,Cyrl
+kw,cor,Indo-European,Celtic,Latn
+co,cos,Indo-European,Romance,Latn
+cr,cre,Algic,Algonquian,Cans
+cr,cre,Algic,Algonquian,Latn
+,crh,Altaic,Turkic,Cyrl
+,crh,Altaic,Turkic,Arab
+cy,cym,Indo-European,Celtic,Ogam
+cy,cym,Indo-European,Celtic,Latn
+da,dan,Indo-European,Germanic,Latn
+,dar,Nakh-Daghestanian,Dargwic,Arab
+,dar,Nakh-Daghestanian,Dargwic,Cyrl
+,dar,Nakh-Daghestanian,Dargwic,Latn
+de,deu,Indo-European,Germanic,Latn
+,dik,Eastern Sudanic,Western Nilotic,Latn
+,din,Eastern Sudanic,Western Nilotic,Latn
+dv,div,Indo-European,Indic,Arab
+dv,div,Indo-European,Indic,Thaa
+,dyu,Mande,Western Mande,Arab
+,dyu,Mande,Western Mande,Latn
+dz,dzo,Sino-Tibetan,Bodic,Tibt
+el,ell,Indo-European,Greek,Grek
+en,eng,Indo-European,Germanic,Latn
+eo,epo,Indo-European,Romance,Latn
+,esg,Dravidian,Dravidian,Deva
+et,est,Uralic,Finnic,Latn
+eu,eus,Basque,Basque,Latn
+,eve,Altaic,Tungusic,Cyrl
+ee,ewe,Niger-Congo,Tano,Latn
+fo,fao,Indo-European,Germanic,Latn
+fa,fas,Indo-European,Iranian,Arab
+fj,fij,Austronesian,Oceanic,Latn
+tl,fil,Austronesian,Greater Central Philippine,Latn
+tl,fil,Austronesian,Greater Central Philippine,Tglg
+fi,fin,Uralic,Finnic,Latn
+,fon,Niger-Congo,Tano,Latn
+fr,fra,Indo-European,Romance,Latn
+fy,fry,Indo-European,Germanic,Latn
+ff,ful,Niger-Congo,Peul-Serer,Latn
+,fuv,Niger-Congo,Peul-Serer,Arab
+,fuv,Niger-Congo,Peul-Serer,Latn
+,gaz,Afro-Asiatic,Lowland East Cushitic,Latn
+gd,gla,Indo-European,Celtic,Latn
+ga,gle,Indo-European,Celtic,Ogam
+ga,gle,Indo-European,Celtic,Latn
+gl,glg,Indo-European,Romance,Latn
+gv,glv,Indo-European,Celtic,Latn
+gn,grn,Tupian,Maweti-Guarani,Latn
+gu,guj,Indo-European,Indic,Khoj
+gu,guj,Indo-European,Indic,Gujr
+ht,hat,Indo-European,Creoles and Pidgins,Latn
+ha,hau,Afro-Asiatic,West Chadic,Latn
+ha,hau,Afro-Asiatic,West Chadic,Arab
+,haw,Austronesian,Oceanic,Latn
+he,heb,Afro-Asiatic,Semitic,Hebr
+he,heb,Afro-Asiatic,Semitic,Grek
+hz,her,Niger-Congo,Bantu,Latn
+,hil,Austronesian,Greater Central Philippine,Latn
+hi,hin,Indo-European,Indic,Deva
+ho,hmo,Austronesian,Oceanic,Latn
+hr,hrv,Indo-European,Slavic,Latn
+hu,hun,Uralic,Ugric,Latn
+hy,hye,Indo-European,Armenian,Armn
+ig,ibo,Niger-Congo,Igboid,Latn
+ii,iii,Sino-Tibetan,Burmese-Lolo,Latn
+iu,iku,Eskimo-Aleut,Eskimo,Cans
+ie,ile,Indo-European,Romance,Latn
+,ilo,Austronesian,Northern Luzon,Latn
+ia,ina,Indo-European,Romance,Latn
+id,ind,Austronesian,Malayo-Sumbawan,Latn
+,inh,Nakh-Daghestanian,Nakh,Latn
+,inh,Nakh-Daghestanian,Nakh,Cyrl
+is,isl,Indo-European,Germanic,Latn
+it,ita,Indo-European,Romance,Latn
+jv,jav,Austronesian,Javanese,Latn
+jv,jav,Austronesian,Javanese,Java
+ja,jpn,Japanese,Japanese,Jpan
+,kab,Afro-Asiatic,Berber,Latn
+,kab,Afro-Asiatic,Berber,Tfng
+,kac,Sino-Tibetan,Brahmaputran,Latn
+kl,kal,Eskimo-Aleut,Eskimo,Latn
+,kam,Niger-Congo,Bantu,Latn
+kn,kan,Dravidian,Dravidian,Knda
+ks,kas,Indo-European,Indic,Deva
+ks,kas,Indo-European,Indic,Shrd
+ks,kas,Indo-European,Indic,Arab
+ka,kat,Kartvelian,Kartvelian,Geor
+kr,kau,Saharan,Western Saharan,Latn
+kk,kaz,Altaic,Turkic,Latn
+kk,kaz,Altaic,Turkic,Cyrl
+kk,kaz,Altaic,Turkic,Arab
+,kbd,Northwest Caucasian,Northwest Caucasian,Cyrl
+,kbp,Niger-Congo,Grusi,Latn
+,khk,Altaic,Mongolic,Mong
+,khk,Altaic,Mongolic,Latn
+km,khm,Austro-Asiatic,Khmer,Thai
+ki,kik,Niger-Congo,Bantu,Latn
+rw,kin,Niger-Congo,Bantu,Latn
+ky,kir,Altaic,Turkic,Cyrl
+ky,kir,Altaic,Turkic,Arab
+ky,kir,Altaic,Turkic,Latn
+,kjh,Altaic,Turkic,Latn
+,kjh,Altaic,Turkic,Cyrl
+,kmr,Indo-European,Iranian,Latn
+,knc,Saharan,Western Saharan,Arab
+,knc,Saharan,Western Saharan,Latn
+kv,kom,Uralic,Permic,Latn
+kv,kom,Uralic,Permic,Cyrl
+kg,kon,Niger-Congo,Bantu,Latn
+ko,kor,Korean,Korean,Hang
+,kum,Altaic,Turkic,Latn
+,kum,Altaic,Turkic,Cyrl
+lo,lao,Tai-Kadai,Kam-Tai,Laoo
+la,lat,Indo-European,Romance,Latn
+lv,lav,Indo-European,Baltic,Latn
+,lez,Nakh-Daghestanian,Lezgic,Latn
+,lez,Nakh-Daghestanian,Lezgic,Cyrl
+,lez,Nakh-Daghestanian,Lezgic,Arab
+,lij,Indo-European,Romance,Latn
+li,lim,Indo-European,Germanic,Latn
+ln,lin,Niger-Congo,Bantu,Latn
+lt,lit,Indo-European,Baltic,Latn
+lt,lit,Indo-European,Baltic,Cyrl
+,lld,Indo-European,Romance,Latn
+,lmo,Indo-European,Romance,Latn
+lb,ltz,Indo-European,Germanic,Latn
+,lua,Niger-Congo,Bantu,Latn
+lu,lub,Niger-Congo,Bantu,Latn
+lg,lug,Niger-Congo,Bantu,Latn
+,luo,Eastern Sudanic,Western Nilotic,Latn
+,lus,Sino-Tibetan,Kuki-Chin,Latn
+,mag,Indo-European,Indic,Deva
+mh,mah,Austronesian,Oceanic,Latn
+,mai,Indo-European,Indic,Deva
+,mai,Indo-European,Indic,Tirh
+ml,mal,Dravidian,Dravidian,Mlym
+mr,mar,Indo-European,Indic,Deva
+,men,Mande,Western Mande,Mend
+,men,Mande,Western Mande,Latn
+,mfe,Indo-European,Creoles and Pidgins,Latn
+,min,Austronesian,Malayo-Sumbawan,Latn
+mk,mkd,Indo-European,Slavic,Cyrl
+mg,mlg,Austronesian,Barito,Latn
+mt,mlt,Afro-Asiatic,Semitic,Latn
+,mni,Sino-Tibetan,Manipuri,Beng
+,mni,Sino-Tibetan,Manipuri,Mtei
+mn,mon,Altaic,Mongolic,Soyo
+mn,mon,Altaic,Mongolic,Phag
+mn,mon,Altaic,Mongolic,Mong
+mn,mon,Altaic,Mongolic,Cyrl
+,mos,Niger-Congo,Oti-Volta,Latn
+mi,mri,Austronesian,Oceanic,Latn
+ms,msa,Austronesian,Malayo-Sumbawan,Latn
+ms,msa,Austronesian,Malayo-Sumbawan,Arab
+,mwl,Indo-European,Romance,Latn
+my,mya,Sino-Tibetan,Burmese-Lolo,Mymr
+,myv,Uralic,Mordvin,Cyrl
+,nap,Indo-European,Romance,Latn
+na,nau,Austronesian,Oceanic,Latn
+nv,nav,Na-Dene,Athapaskan,Latn
+nd,nde,Niger-Congo,Bantu,Latn
+ng,ndo,Niger-Congo,Bantu,Latn
+ne,nep,Indo-European,Indic,Deva
+,nia,Austronesian,Northwest Sumatra-Barrier Islands,Latn
+,niu,Austronesian,Oceanic,Latn
+nl,nld,Indo-European,Germanic,Latn
+nn,nno,Indo-European,Germanic,Latn
+nb,nob,Indo-European,Germanic,Latn
+,nog,Altaic,Turkic,Arab
+,nog,Altaic,Turkic,Latn
+,nog,Altaic,Turkic,Cyrl
+no,nor,Indo-European,Germanic,Latn
+,nso,Niger-Congo,Bantu,Latn
+,nus,Eastern Sudanic,Western Nilotic,Latn
+ny,nya,Niger-Congo,Bantu,Latn
+oc,oci,Indo-European,Romance,Latn
+oj,oji,Algic,Algonquian,Cans
+,olo,Uralic,Finnic,Latn
+or,ori,Indo-European,Indic,Orya
+om,orm,Afro-Asiatic,Lowland East Cushitic,Latn
+os,oss,Indo-European,Iranian,Latn
+os,oss,Indo-European,Iranian,Cyrl
+,pag,Austronesian,Northern Luzon,Latn
+,pam,Austronesian,Central Luzon,Latn
+,pam,Austronesian,Central Luzon,Tglg
+pa,pan,Indo-European,Indic,Khoj
+pa,pan,Indo-European,Indic,Guru
+pa,pan,Indo-European,Indic,Arab
+,pap,Indo-European,Creoles and Pidgins,Latn
+fa,pes,Indo-European,Iranian,Arab
+,pis,Indo-European,Creoles and Pidgins,Latn
+pi,pli,Indo-European,Iranian,Deva
+,plt,Austronesian,Barito,Latn
+,pms,Indo-European,Romance,Latn
+pl,pol,Indo-European,Slavic,Latn
+pt,por,Indo-European,Romance,Latn
+,prs,Indo-European,Iranian,Arab
+ps,pus,Indo-European,Iranian,Arab
+,quc,Mayan,Mayan,Latn
+qu,que,Quechuan,Quechuan,Latn
+,quy,Quechuan,Quechuan,Latn
+,rar,Austronesian,Oceanic,Latn
+rm,roh,Indo-European,Romance,Latn
+ro,ron,Indo-European,Romance,Latn
+ro,ron,Indo-European,Romance,Cyrl
+rn,run,Niger-Congo,Bantu,Latn
+ru,rus,Indo-European,Slavic,Cyrl
+sg,sag,Niger-Congo,Ubangi,Latn
+,sah,Altaic,Turkic,Cyrl
+sa,san,Indo-European,Iranian,Deva
+sa,san,Indo-European,Iranian,Kawi
+sa,san,Indo-European,Iranian,Phag
+sa,san,Indo-European,Iranian,Shrd
+sa,san,Indo-European,Iranian,Soyo
+sa,san,Indo-European,Iranian,Thai
+,sat,Austro-Asiatic,Munda,Orya
+,sat,Austro-Asiatic,Munda,Deva
+,sat,Austro-Asiatic,Munda,Beng
+,sat,Austro-Asiatic,Munda,Latn
+,sat,Austro-Asiatic,Munda,Olck
+,scn,Indo-European,Romance,Latn
+,shn,Tai-Kadai,Kam-Tai,Shan
+si,sin,Indo-European,Indic,Sinh
+sk,slk,Indo-European,Slavic,Latn
+sl,slv,Indo-European,Slavic,Latn
+se,sme,Uralic,Saami,Latn
+,smn,Uralic,Saami,Latn
+sm,smo,Austronesian,Oceanic,Latn
+sn,sna,Niger-Congo,Bantu,Latn
+sd,snd,Indo-European,Indic,Khoj
+sd,snd,Indo-European,Indic,Deva
+sd,snd,Indo-European,Indic,Arab
+so,som,Afro-Asiatic,Lowland East Cushitic,Latn
+so,som,Afro-Asiatic,Lowland East Cushitic,Arab
+st,sot,Niger-Congo,Bantu,Latn
+es,spa,Indo-European,Romance,Latn
+sq,sqi,Indo-European,Albanian,Latn
+sq,sqi,Indo-European,Albanian,Grek
+sc,srd,Indo-European,Romance,Latn
+sr,srp,Indo-European,Slavic,Latn
+sr,srp,Indo-European,Slavic,Cyrl
+ss,ssw,Niger-Congo,Bantu,Latn
+su,sun,Austronesian,Malayo-Sumbawan,Sund
+su,sun,Austronesian,Malayo-Sumbawan,Latn
+sw,swa,Niger-Congo,Bantu,Latn
+sv,swe,Indo-European,Germanic,Latn
+sw,swh,Niger-Congo,Bantu,Latn
+,tab,Nakh-Daghestanian,Lezgic,Cyrl
+ty,tah,Austronesian,Oceanic,Latn
+ta,tam,Dravidian,Dravidian,Taml
+,taq,Afro-Asiatic,Berber,Tfng
+,taq,Afro-Asiatic,Berber,Latn
+tt,tat,Altaic,Turkic,Latn
+tt,tat,Altaic,Turkic,Cyrl
+tt,tat,Altaic,Turkic,Arab
+te,tel,Dravidian,Dravidian,Telu
+tg,tgk,Indo-European,Iranian,Cyrl
+tl,tgl,Austronesian,Greater Central Philippine,Latn
+tl,tgl,Austronesian,Greater Central Philippine,Tglg
+th,tha,Tai-Kadai,Kam-Tai,Thai
+ti,tir,Afro-Asiatic,Semitic,Ethi
+,tkl,Austronesian,Oceanic,Latn
+,tly,Indo-European,Iranian,Latn
+,tly,Indo-European,Iranian,Cyrl
+,toi,Niger-Congo,Bantu,Latn
+to,ton,Austronesian,Oceanic,Latn
+,tpi,Indo-European,Creoles and Pidgins,Latn
+tn,tsn,Niger-Congo,Bantu,Latn
+ts,tso,Niger-Congo,Bantu,Latn
+tk,tuk,Altaic,Turkic,Latn
+tk,tuk,Altaic,Turkic,Cyrl
+tr,tur,Altaic,Turkic,Latn
+tr,tur,Altaic,Turkic,Grek
+tr,tur,Altaic,Turkic,Arab
+tw,twi,Niger-Congo,Tano,Latn
+,tyv,Altaic,Turkic,Latn
+,tyv,Altaic,Turkic,Cyrl
+,tzm,Afro-Asiatic,Berber,Latn
+,tzm,Afro-Asiatic,Berber,Tfng
+,ude,Altaic,Tungusic,Latn
+,ude,Altaic,Tungusic,Cyrl
+ug,uig,Altaic,Turkic,Cyrl
+ug,uig,Altaic,Turkic,Latn
+ug,uig,Altaic,Turkic,Arab
+uk,ukr,Indo-European,Slavic,Cyrl
+,umb,Niger-Congo,Bantu,Latn
+ur,urd,Indo-European,Indic,Kthi
+ur,urd,Indo-European,Indic,Khoj
+ur,urd,Indo-European,Indic,Arab
+uz,uzb,Altaic,Turkic,Latn
+uz,uzb,Altaic,Turkic,Cyrl
+uz,uzb,Altaic,Turkic,Arab
+,uzn,Altaic,Turkic,Arab
+,uzn,Altaic,Turkic,Cyrl
+,uzn,Altaic,Turkic,Latn
+,vec,Indo-European,Romance,Latn
+ve,ven,Niger-Congo,Bantu,Latn
+vi,vie,Austro-Asiatic,Viet-Muong,Latn
+,war,Austronesian,Greater Central Philippine,Latn
+wo,wol,Niger-Congo,Wolof,Latn
+wo,wol,Niger-Congo,Wolof,Arab
+,xal,Altaic,Mongolic,Cyrl
+xh,xho,Niger-Congo,Bantu,Latn
+,ydd,Indo-European,Germanic,Hebr
+yi,yid,Indo-European,Germanic,Hebr
+yo,yor,Niger-Congo,Defoid,Latn
+,yua,Mayan,Mayan,Latn
+,yue,Sino-Tibetan,Chinese,Hans
+,yue,Sino-Tibetan,Chinese,Hant
+,zha,Tai-Kadai,Kam-Tai,Latn
+zh,zho,Sino-Tibetan,Chinese,Phag
+zh,zho,Sino-Tibetan,Chinese,Hans
+zh,zho,Sino-Tibetan,Chinese,Hant
+,zsm,Austronesian,Malayo-Sumbawan,Latn
+zu,zul,Niger-Congo,Bantu,Latn
+,zun,Zuni,Zuni,Latn

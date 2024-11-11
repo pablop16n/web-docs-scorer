@@ -190,11 +190,10 @@ With such a low WDS score, this document can be considered an undesirable docume
 
 ### docscorer.py
 
-The main script, it will create a csv for each jsonl present in the input directory. The input jsonl files must contain the next columns:
+The main script, it will create a csv for each jsonl present in the input directory. The input jsonl files should be named as shown in this example `ell_Grek.jsonl`, thus the entire file names should follow the convention of using the three-letter language code (ISO 639-3) and the four-letter script code (ISO 15924) separated by an underscore. These files must contain the next columns:
 - `id`: identifier of the document, must be unique.
-- `document_lang`: language label of the whole document.
-- `scores`: list of language probability scores from the language identifier.
-- `langs`: list of language labels for each segment of the document.
+- `scores`: list of language probability scores from the language identifier (list of integer or float numbers, must be correlated with _langs_ field).
+- `langs`: list of language labels for each segment of the document (list of ISO 639-3 language codes, must be correlated with _scores_ field).
 - `text`: text of the document. Segments must be separated by _\n_.
 
 The output csvs will contain the next columns. The final score will always be considered the _WDS_score_:
@@ -271,7 +270,7 @@ We prefer this solution to a simple average because the aim of these scores is t
 
 ### language_score
 
-The _language_score_ is processed with `docscorer.score_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
+The _language_score_ is processed with `docscorer.score_lang()`. It uses the information about language identification at segment and document level (provided as metadata in the input files) in order to get the ratio of [alphabetic characters](#glossary) in the correct language. Segments whose language matches the document language are considered correct and segments with a different language are considered wrong. The application assumes that the text inside the document is always written with the language script indicated in the [file name](#docscorerpy-main-script). The _language_score_ is a value that ranges from 0 (worst score) to 10 (best score), and is computed as follows:
 
 `correct_characters / (correct_characters + wrong_characters) * 10`
 
@@ -363,7 +362,7 @@ The _repeated_score_ score is processed with `doscorer.score_repeated()`, and it
 
 ## Adaptating subscores to different languages 
 
-This gets processed in `language_adaption.extract_ratios()`and `docscorer`.
+This gets processed in `language_adaption.extract_ratios()` and `docscorer`.
 
 Some of the subscores used to get the _WDS_score_ are based on ratios that need to be computed for each language for optimal performance:
   * _punctuation_score_
@@ -422,7 +421,7 @@ Note that not only the relative values are adapted (_punctuation_score_, _singul
 
 The inverse cross-multiplication is used because the relationship between punctuation and alphabetic characters is inversely proportional. A language that normally uses less alphabetic characters than other will have a bigger ratio of punctuation. For example, in our test sample, German has a punctuation ratio of 2.8, this means that every punctuation mark usually needs 36 alphabetic characters (100/2.8 ≈ 36). In Chinese we found a ratio of 9.9, 10 alphabetic characters are thus needed every 10 alphabetic characters. We use the punctuation as a point of reference to extract the average alphabetic characters of the language, so we can obtain the conversion of what we called long or superlong segments.
 
-In case the analysed language is not present in `language_adaption/medians_language.csv`, we use the average ratio of the other languages in the csv.
+In case the analysed language is not present in `configurations/language_adaption/medians_language.csv`, we use the data of the [WALS](https://wals.info/) to find the closest related languages (within the same script system). The application uses the average of these data to fit the parameters. If it occurs that is not possible to find a related language, the average ratio of all other languages is used.
 
 ## Glossary
 - _document_: whole text of a crawled website

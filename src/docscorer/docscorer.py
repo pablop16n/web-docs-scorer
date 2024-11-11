@@ -1,6 +1,6 @@
 """
 Usage:
-  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>]
+  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>] [--config_info_score=<dir>] [--config_lang_codes=<json>] [--config_lang_families=<csv>]
 
 """
 
@@ -17,27 +17,51 @@ try:
 except ImportError:
     from utils import average, precision_round, join_utf_blocks, custom_mean
 
+from modules.informativeness import Informativeness
 
 
 class DocumentScorer:
-    def __init__(self,  config=os.path.dirname(__file__)+"/language_adaption/medians_language.csv"):
-        ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________    
+    def __init__(self,  config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions", config_lang_codes=os.path.dirname(__file__)+"configurations/language_adaption/lang_code_conversion.json", config_lang_families=os.path.dirname(__file__)+"configurations/language_adaption/lang_families_script.csv"):
+        ## _____ LANGUAGE CODE ADAPTION ________________________________________________________________________________________________
+        with open(config_lang_codes, "r", encoding="utf-8") as file:
+            self.CODE_2_to_3_CONVERSION = json.load(file)
+
+
+        ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________
         df_lang_adaption = pd.read_csv(config)
-        df_lang_adaption.set_index("language", inplace=True)
-        LANGUAGES = df_lang_adaption.index
+        LANGUAGES = df_lang_adaption.language_3_chars.to_list()
         
-    
-        LANGUAGES_NUMBERS = {lang : round(df_lang_adaption.loc[lang]["numbers_score"], 1) for lang in LANGUAGES}
-        LANGUAGES_PUNCTUATION = {lang : round(df_lang_adaption.loc[lang]["punctuation_score"], 1) for lang in LANGUAGES}
-        LANGUAGES_SINGULAR_CHARS = {lang : round(df_lang_adaption.loc[lang]["singular_chars_score"], 1) for lang in LANGUAGES}
+        MODELED_LANGS_NUMBERS = {f"{line.language_3_chars}_{line.script}" : round(line.numbers_score, 1) for _, line in df_lang_adaption.iterrows()}
+        MODELED_LANGS_PUNCTUATION = {f"{line.language_3_chars}_{line.script}" : round(line.punctuation_score, 1) for _, line in df_lang_adaption.iterrows()}
+        MODELED_LANGS_SINGULAR_CHARS = {f"{line.language_3_chars}_{line.script}" : round(line.singular_chars_score, 1) for _, line in df_lang_adaption.iterrows()}
+        
+        ## _____ LANGUAGES_SCRIPTS ________________________________________________________________________________________________
+        df_families = pd.read_csv(config_lang_families)
+        df_lang_no_data = df_families[~df_families.language_3_chars.isin(LANGUAGES)]
+        df_lang_data = df_families[df_families.language_3_chars.isin(LANGUAGES)]
+        df_lang_adaption = pd.merge(df_lang_data, df_lang_adaption, on=['language_3_chars', 'script'], how='inner') #language families + medians in the same df
+
+        for _, line in df_lang_no_data.iterrows():
+            familiars = df_lang_adaption[(df_lang_adaption.genus == line.genus)&(df_lang_adaption.script == line.script)]
+            if familiars.empty:
+                familiars = df_lang_adaption[(df_lang_adaption.family == line.family)&(df_lang_adaption.script == line.script)]
+            if not familiars.empty:
+                MODELED_LANGS_NUMBERS[f"{line.language_3_chars}_{line.script}"] = round(average(familiars.numbers_score.to_list()), 2)
+                MODELED_LANGS_PUNCTUATION[f"{line.language_3_chars}_{line.script}"] = round(average(familiars.punctuation_score.to_list()), 2)
+                MODELED_LANGS_SINGULAR_CHARS[f"{line.language_3_chars}_{line.script}"] = round(average(familiars.singular_chars_score.to_list()), 2)
         
         del df_lang_adaption
-        
+        del df_families
+
+        #equivalent script systems
+
+        self.EQUIVALENT_SCRIPTS = {"Hant": "Hans"}
+
         ## _____ REFERENCE RATIO VALUES FOR SPANISH ________________________________________________________________________________________________
         #Current values in the provided csv    
-        ref_punctuation = LANGUAGES_PUNCTUATION["es"]
-        ref_numbers = LANGUAGES_NUMBERS["es"]
-        ref_singular_chars = LANGUAGES_SINGULAR_CHARS["es"]
+        ref_punctuation = MODELED_LANGS_PUNCTUATION["spa_Latn"]
+        ref_numbers = MODELED_LANGS_NUMBERS["spa_Latn"]
+        ref_singular_chars = MODELED_LANGS_SINGULAR_CHARS["spa_Latn"]
         
         #Menu
         menu_length = 25
@@ -66,56 +90,56 @@ class DocumentScorer:
         long_text_max = 1000
 
         ## _____ MENUS ADAPTATION _______________________________________________________________________________________________________________
-        self.MENUS_AVERAGE_LENGTH = {lang: round(ref_punctuation * menu_length / val) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.MENUS_AVERAGE_LENGTH = {lang: round(ref_punctuation * menu_length / val) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.MENUS_AVERAGE_LENGTH["standard"] = average(self.MENUS_AVERAGE_LENGTH.values())
         
         ## _____ PUNCTUATION SCORING _______________________________________________________________________________________________________________
-        self.PUNCTUATION_PERCENT_MAX = {lang: round(val * punct_max / ref_punctuation,1) if val * punct_max / ref_punctuation < 100 else 100.0 for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.PUNCTUATION_PERCENT_MAX = {lang: round(val * punct_max / ref_punctuation,1) if val * punct_max / ref_punctuation < 100 else 100.0 for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.PUNCTUATION_PERCENT_MAX["standard"] = average(self.PUNCTUATION_PERCENT_MAX.values())
         
-        self.PUNCTUATION_PERCENT_BAD = {lang: (round(val * punct_bad[0] / ref_punctuation,1), round(val * punct_bad[1] / ref_punctuation, 1)) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.PUNCTUATION_PERCENT_BAD = {lang: (round(val * punct_bad[0] / ref_punctuation,1), round(val * punct_bad[1] / ref_punctuation, 1)) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.PUNCTUATION_PERCENT_BAD["standard"] = (average([x[0] for x in self.PUNCTUATION_PERCENT_BAD.values()]), average([x[1] for x in self.PUNCTUATION_PERCENT_BAD.values()]))
 
-        self.PUNCTUATION_PERCENT_SEMIBAD = {lang: (round(val * punct_semibad[0] / ref_punctuation,1), round(val * punct_semibad[1] / ref_punctuation, 1)) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.PUNCTUATION_PERCENT_SEMIBAD = {lang: (round(val * punct_semibad[0] / ref_punctuation,1), round(val * punct_semibad[1] / ref_punctuation, 1)) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.PUNCTUATION_PERCENT_SEMIBAD["standard"] = (average([x[0] for x in self.PUNCTUATION_PERCENT_SEMIBAD.values()]), average([x[1] for x in self.PUNCTUATION_PERCENT_SEMIBAD.values()]))
 
-        self.PUNCTUATION_PERCENT_DESIRED_MAX = {lang: round(val * punct_desired_max / ref_punctuation,1) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.PUNCTUATION_PERCENT_DESIRED_MAX = {lang: round(val * punct_desired_max / ref_punctuation,1) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.PUNCTUATION_PERCENT_DESIRED_MAX["standard"] = average(self.PUNCTUATION_PERCENT_DESIRED_MAX.values())
 
-        self.PUNCTUATION_PERCENT_DESIRED_MIN  = {lang: round(val * punct_desired_min / ref_punctuation,1) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.PUNCTUATION_PERCENT_DESIRED_MIN  = {lang: round(val * punct_desired_min / ref_punctuation,1) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.PUNCTUATION_PERCENT_DESIRED_MIN["standard"] = average(self.PUNCTUATION_PERCENT_DESIRED_MIN.values())
 
         ## _____ SINGULAR CHARS SCORING _______________________________________________________________________________________________________________
-        self.SINGULAR_CHARS_PERCENT_MAX = {lang: round(val * singular_chars_max / ref_singular_chars,1) if val * singular_chars_max / ref_singular_chars < 100 else 100.0 for lang, val in LANGUAGES_SINGULAR_CHARS.items()}
+        self.SINGULAR_CHARS_PERCENT_MAX = {lang: round(val * singular_chars_max / ref_singular_chars,1) if val * singular_chars_max / ref_singular_chars < 100 else 100.0 for lang, val in MODELED_LANGS_SINGULAR_CHARS.items()}
         self.SINGULAR_CHARS_PERCENT_MAX["standard"] = average(self.SINGULAR_CHARS_PERCENT_MAX.values())
 
-        self.SINGULAR_CHARS_PERCENT_BAD = {lang: round(val * singular_chars_bad / ref_singular_chars,1) for lang, val in LANGUAGES_SINGULAR_CHARS.items()}
+        self.SINGULAR_CHARS_PERCENT_BAD = {lang: round(val * singular_chars_bad / ref_singular_chars,1) for lang, val in MODELED_LANGS_SINGULAR_CHARS.items()}
         self.SINGULAR_CHARS_PERCENT_BAD["standard"] = average(self.SINGULAR_CHARS_PERCENT_BAD.values())
 
-        self.SINGULAR_CHARS_PERCENT_SEMIBAD = {lang: round(val * singular_chars_semibad / ref_singular_chars,1) for lang, val in LANGUAGES_SINGULAR_CHARS.items()}
+        self.SINGULAR_CHARS_PERCENT_SEMIBAD = {lang: round(val * singular_chars_semibad / ref_singular_chars,1) for lang, val in MODELED_LANGS_SINGULAR_CHARS.items()}
         self.SINGULAR_CHARS_PERCENT_SEMIBAD["standard"] = average(self.SINGULAR_CHARS_PERCENT_SEMIBAD.values())
 
-        self.SINGULAR_CHARS_PERCENT_DESIRED  = {lang: round(val * singular_chars_desired / ref_singular_chars,1) for lang, val in LANGUAGES_SINGULAR_CHARS.items()}
+        self.SINGULAR_CHARS_PERCENT_DESIRED  = {lang: round(val * singular_chars_desired / ref_singular_chars,1) for lang, val in MODELED_LANGS_SINGULAR_CHARS.items()}
         self.SINGULAR_CHARS_PERCENT_DESIRED["standard"] = average(self.SINGULAR_CHARS_PERCENT_DESIRED.values())
 
         ## _____ NUMBERS SCORING _______________________________________________________________________________________________________________
-        self.NUMBERS_PERCENT_MAX = {lang: round(val * numbers_max / ref_numbers,1) if val * numbers_max / ref_numbers < 100 else 100.0 for lang, val in LANGUAGES_NUMBERS.items()}
+        self.NUMBERS_PERCENT_MAX = {lang: round(val * numbers_max / ref_numbers,1) if val * numbers_max / ref_numbers < 100 else 100.0 for lang, val in MODELED_LANGS_NUMBERS.items()}
         self.NUMBERS_PERCENT_MAX["standard"] = average(self.NUMBERS_PERCENT_MAX.values())
 
-        self.NUMBERS_PERCENT_BAD = {lang: round(val * numbers_bad / ref_numbers,1) if val * numbers_max / ref_numbers < 100 else 100.0 for lang, val in LANGUAGES_NUMBERS.items()}
+        self.NUMBERS_PERCENT_BAD = {lang: round(val * numbers_bad / ref_numbers,1) if val * numbers_max / ref_numbers < 100 else 100.0 for lang, val in MODELED_LANGS_NUMBERS.items()}
         self.NUMBERS_PERCENT_BAD["standard"] = average(self.NUMBERS_PERCENT_BAD.values())
 
-        self.NUMBERS_PERCENT_SEMIBAD = {lang: round(val * numbers_semibad / ref_numbers,1) for lang, val in LANGUAGES_NUMBERS.items()}
+        self.NUMBERS_PERCENT_SEMIBAD = {lang: round(val * numbers_semibad / ref_numbers,1) for lang, val in MODELED_LANGS_NUMBERS.items()}
         self.NUMBERS_PERCENT_SEMIBAD["standard"] = average(self.NUMBERS_PERCENT_SEMIBAD.values())
 
-        self.NUMBERS_PERCENT_DESIRED  = {lang: round(val * numbers_desired / ref_numbers,1) for lang, val in LANGUAGES_NUMBERS.items()}
+        self.NUMBERS_PERCENT_DESIRED  = {lang: round(val * numbers_desired / ref_numbers,1) for lang, val in MODELED_LANGS_NUMBERS.items()}
         self.NUMBERS_PERCENT_DESIRED["standard"] = average(self.NUMBERS_PERCENT_DESIRED.values())
 
         ## _____ LONG SEGMENTS SCORING _______________________________________________________________________________________________________________
-        self.LONG_TEXT_MAX = {lang: round(ref_punctuation * long_text_max / val) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.LONG_TEXT_MAX = {lang: round(ref_punctuation * long_text_max / val) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.LONG_TEXT_MAX["standard"] = average(self.LONG_TEXT_MAX.values())
 
-        self.LONG_TEXT_MIN = {lang: round(ref_punctuation * long_text_min / val) for lang, val in LANGUAGES_PUNCTUATION.items()}
+        self.LONG_TEXT_MIN = {lang: round(ref_punctuation * long_text_min / val) for lang, val in MODELED_LANGS_PUNCTUATION.items()}
         self.LONG_TEXT_MIN["standard"] = average(self.LONG_TEXT_MIN.values())
 
         # Number of long texts that means a 10 score
@@ -134,20 +158,25 @@ class DocumentScorer:
         self.word_pattern = join_utf_blocks(SINGULAR_CHARS + PUNCTUATION_CHARS + NUMBERS + SPACES, inverse=True) #alphabetic chars are considered by default
         # self.spaces_pattern = join_utf_blocks(SPACES)
 
+        ## _____ INFORMATIVENESS SCORE _______________________________________________________________________________________________________________
+        self.info = Informativeness(config_info)
 
-## _____SCORING FUNCTIONS _______________________________________________________________________________________________________________
+
+    ## _____SCORING FUNCTIONS _______________________________________________________________________________________________________________
     def __score_lang(self, ref_language, lang_segments, scores_lang, word_chars):
-        if len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars):
+        
+        if scores_lang and (len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars)):
             return 10 #Errors from unmatched scores
+
         menu_length = self.MENUS_AVERAGE_LENGTH[ref_language] if ref_language in self.MENUS_AVERAGE_LENGTH else self.MENUS_AVERAGE_LENGTH["standard"]
         correct_lang_chars = 0
         wrong_lang_chars = 0
         for n in range(len(lang_segments)):
             if word_chars[n] <= menu_length:
                 continue
-            elif lang_segments[n].split("_")[0] == ref_language:
+            elif lang_segments[n] == ref_language:
                 correct_lang_chars += word_chars[n]
-            elif scores_lang[n] > 0.2:
+            elif not scores_lang or scores_lang[n] > 0.2:
                 wrong_lang_chars += word_chars[n]
                 
         if correct_lang_chars == 0:
@@ -334,44 +363,51 @@ class DocumentScorer:
 
 ## _____ MAIN SCORING FUNCTION _______________________________________________________________________________________________________________
 
-    def score_text(self, ref_lang, lang_segments, scores_lang, document):
+    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys):
 
-        condensed_data = [(len(re.findall(self.word_pattern, segment)), len(re.findall(self.punctuation_pattern, segment)), len(re.findall(self.singular_chars_pattern, segment)), len(re.findall(self.numbers_pattern, segment))) for segment in document.split("\n")]
+        condensed_data = [(len(re.findall(self.word_pattern, segment)), len(re.findall(self.punctuation_pattern, segment)), len(re.findall(self.singular_chars_pattern, segment)), len(re.findall(self.numbers_pattern, segment))) for segment in document_text.split("\n")]
     
         word_chars = [x[0] for x in condensed_data]
         punctuation_chars = [x[1] for x in condensed_data]
         singular_chars = [x[2] for x in condensed_data]
         numbers = [x[3] for x in condensed_data]
-        
+        ref_lang = ref_lang[0] if type(ref_lang) == list else ref_lang
         language_score = self.__score_lang(ref_lang, lang_segments, scores_lang, word_chars)
         punctuation_score = self.__score_punctuation(ref_lang, sum(punctuation_chars), sum(word_chars))
         singular_chars_score = self.__score_singular_chars(ref_lang, sum(singular_chars), sum(word_chars))
         numbers_score = self.__score_numbers(ref_lang, sum(numbers), sum(word_chars))
-        repeated_score = self.__score_repeated(ref_lang, document)
-        url_score = self.__score_urls(ref_lang, document, word_chars)
+        repeated_score = self.__score_repeated(ref_lang, document_text)
+        url_score = self.__score_urls(ref_lang, document_text, word_chars)
         long_segments_scores = self.__score_long_texts(ref_lang, lang_segments, word_chars)
-            
+        informativeness_score = self.info.rate_information(document_text, script_sys)
         
-        score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10])
-        return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1)]#, document] #comment document if text is not wanted
+        score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10, informativeness_score/10])
+        return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1), round(informativeness_score, 1), document_text.replace("\n", "\\n")] #comment document if text is not wanted
 
 
-    def score_document(self, raw_document, only_final_score=False):
-        document = json.loads(raw_document)
-        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"], document=document["text"])
+    def score_document(self, document, only_final_score=False):
+        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"])
         if only_final_score:
             return score[0]
         else:
             return score
     
-def score_directory(input_path, output_path, config):
-    ds=DocumentScorer(config)
+def score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families):
+    ds=DocumentScorer(config=config, config_info=config_info, config_lang_codes=config_lang_codes, config_lang_families=config_lang_families)
     for json_f in os.listdir(input_path):
         if json_f.endswith(".jsonl"):
+            if not re.match("[a-z]{3}_[A-Z][a-z]{3}$", json_f.split(".")[0]):
+                logging.error(f"{json_f} is not a well formed named → eng_Latn.jsonl")
+                continue
             documents = os.path.join(input_path, json_f)
             file_name = os.path.splitext(os.path.basename(json_f))[0]
             writing_path = os.path.join(output_path, f"{file_name}.csv")
             df = pd.DataFrame(columns=["score"])
+
+            lang_script = json_f.split(".")[0].split("_")
+            language = lang_script[0]
+            script = lang_script[1]
+            script = ds.EQUIVALENT_SCRIPTS[script] if script in ds.EQUIVALENT_SCRIPTS else script
             
             i = 0
             logging.info(f"Processing: {file_name}")
@@ -380,8 +416,23 @@ def score_directory(input_path, output_path, config):
                 logging.info(f"{file_name} - {n_lines} documents")
             with open(documents, "r", encoding="utf-8") as file:
                 for document in file:
+                    document = json.loads(document)
+                    document["document_lang"] = f"{language}_{script}"
+                    document["script"] = script
+                    langs_fixed = []
+                    for x in document["langs"]:
+                        if re.match("[a-z]{3}$", x):
+                            langs_fixed.append(f"{x}_{script}")
+                        elif re.match("[a-z]{3}_[A-Z][a-z]{3}$", x):
+                            segm_lang_script = x.split("_")
+                            segm_script = ds.EQUIVALENT_SCRIPTS[segm_lang_script[1]] if segm_lang_script[1] in ds.EQUIVALENT_SCRIPTS else segm_lang_script[1]
+                            langs_fixed.append(f"{segm_lang_script[0]}_{segm_script}")
+                        else:
+                            langs_fixed.append(x)
+                    
+                    document["langs"] = langs_fixed
                     document_score = ds.score_document(document)
-                    docid = json.loads(document)["id"]
+                    docid = document["id"]
                     df.loc[docid] = [document_score]
                     
                     i+=1
@@ -397,7 +448,8 @@ def score_directory(input_path, output_path, config):
             df["repeated_score"] = df.score.apply(lambda x: x[6])
             df["n_long_segments_score"] = df.score.apply(lambda x: x[7])
             df["great_segment_score"] = df.score.apply(lambda x: x[8])
-            # df["text"] = df.score.apply(lambda x: x[9]) #comment if text is not wanted
+            df["informativeness_score"] = df.score.apply(lambda x: x[9])
+            df["text"] = df.score.apply(lambda x: x[10]) #comment if text is not wanted
             df.drop(columns=["score"], inplace=True)
             df.to_csv(writing_path)
             logging.info(f"Saved results in '{writing_path}'")
@@ -407,6 +459,8 @@ def main():
     #logging_setup()
     args = docopt.docopt(__doc__, version='printbook v 1.0')
 
+    ## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
+    
     input_path=args['--input']
     if( not os.path.exists(input_path)):
         logging.error(f"File {input_path} not found")
@@ -420,18 +474,39 @@ def main():
     if( not os.path.exists(output_path)):
         logging.error(f"Directory {output_path} not found")
         sys.exit(-1)
-
+        
+    ## _____ CONFIGURATION FILES _______________________________________________________________________________________________________________
     config=args['--config']
     if not config:
-        config=os.path.dirname(__file__)+"/language_adaption/medians_language.csv"
+        config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv"
     if( not os.path.exists(config)):
         logging.error(f"File {config} not found")
         sys.exit(-1)
     
+    config_info=args['--config_info_score']
+    if not config_info:
+        config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions/"
+    if( not os.path.exists(config_info)):
+        logging.error(f"File {config_info} not found")
+        sys.exit(-1)
+
+    config_lang_codes=args['--config_lang_codes']
+    if not config_lang_codes:
+        config_lang_codes=os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json"
+    if( not os.path.exists(config_lang_codes)):
+        logging.error(f"File {config_lang_codes} not found")
+        sys.exit(-1)
+    
+    config_lang_families=args['--config_lang_families']
+    if not config_lang_families:
+        config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"
+    if( not os.path.exists(config_lang_families)):
+        logging.error(f"File {config_lang_families} not found")
+        sys.exit(-1)
 
     logging.info("Executing main program...")
     
-    score_directory(input_path, output_path, config)
+    score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families)
     logging.info("Program finished")
 
 if __name__ == '__main__':
