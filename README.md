@@ -81,7 +81,7 @@ Note that the _language_score_ is weighted (since it scores from 0 to 10, while 
 
 ### An example of the _WDS_score_
 
-In this section we show an example on how the **_WDS_score_** is computed, and the meaning of its subscores. The document is extracted from the HPLT v1.2 Italian dataset, and can be found in `example/example1.jsonl`. An excerpt of the document is shown below:
+In this section we show an example on how the **_WDS_score_** is computed, and the meaning of its subscores. The document is extracted from the HPLT v1.2 Italian dataset, and can be found in `example/ita_Latn.jsonl`. An excerpt of the document is shown below:
 
 > [...]
 > 
