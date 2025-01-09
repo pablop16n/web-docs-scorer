@@ -9,7 +9,8 @@ dependencies = [
     "docopt",
     "pandas",
     "joblib",
-    "zstandard"
+    "zstandard",
+    "scipy"
 ]
 classifiers = [
     "Environment :: Console",
@@ -45,4 +46,4 @@ Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 
 
 [tool.setuptools.package-data]
-docscorer = [ "language_adaption/*.csv"]
+docscorer = [ "configurations/language_adaption/*", "configurations/interpolation_functions/*"]
