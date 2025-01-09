@@ -8,6 +8,8 @@ requires-python = ">=3.8"
 dependencies = [
     "docopt",
     "pandas",
+    "joblib",
+    "zstandard"
 ]
 classifiers = [
     "Environment :: Console",
