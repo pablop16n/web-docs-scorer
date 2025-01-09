@@ -23,7 +23,7 @@ except ImportError:
 
 
 class DocumentScorer:
-    def __init__(self,  config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions", config_lang_codes=os.path.dirname(__file__)+"configurations/language_adaption/lang_code_conversion.json", config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"):
+    def __init__(self,  config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions", config_lang_codes=os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json", config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"):
         ## _____ LANGUAGE CODE ADAPTION ________________________________________________________________________________________________
         with open(config_lang_codes, "r", encoding="utf-8") as file:
             self.CODE_2_to_3_CONVERSION = json.load(file)
