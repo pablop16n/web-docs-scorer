@@ -1,6 +1,6 @@
 [project]
 name = "docscorer"
-version = "0.1"
+version = "1.1"
 license = {file = "LICENSE"}
 readme = "README.md"
 description = "scorer for web-crawled documents."
@@ -8,6 +8,9 @@ requires-python = ">=3.8"
 dependencies = [
     "docopt",
     "pandas",
+    "joblib",
+    "zstandard",
+    "scipy"
 ]
 classifiers = [
     "Environment :: Console",
@@ -43,4 +46,4 @@ Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 
 
 [tool.setuptools.package-data]
-docscorer = [ "language_adaption/*.csv"]
+docscorer = [ "configurations/language_adaption/*", "configurations/interpolation_functions/*"]
