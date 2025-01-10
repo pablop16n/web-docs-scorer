@@ -30,4 +30,4 @@ def precision_round(number):
     return rounded_value
 
 def average(list):
-    return precision_round(sum(list)/len(list))
+    return round(sum(list)/len(list),3)
