@@ -21,6 +21,12 @@ try:
 except ImportError:
   from modules.informativeness import Informativeness
 
+logging.basicConfig(
+        level=logging.INFO,  
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        stream=sys.stdout 
+    )
+
 
 class DocumentScorer:
     def __init__(self,  config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions", config_lang_codes=os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json", config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"):
@@ -165,7 +171,7 @@ class DocumentScorer:
 
 
     ## _____SCORING FUNCTIONS _______________________________________________________________________________________________________________
-    def __score_lang(self, ref_language, lang_segments, scores_lang, word_chars):
+    def __score_lang(self, ref_language, lang_segments, scores_lang, word_chars, id, logging):
         
         if scores_lang and (len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars)):
             return 10 #Errors from unmatched scores
@@ -173,15 +179,21 @@ class DocumentScorer:
         menu_length = self.MENUS_AVERAGE_LENGTH[ref_language] if ref_language in self.MENUS_AVERAGE_LENGTH else self.MENUS_AVERAGE_LENGTH["standard"]
         correct_lang_chars = 0
         wrong_lang_chars = 0
+        available_chars = False
         for n in range(len(lang_segments)):
             if word_chars[n] <= menu_length:
+                if lang_segments[n] == ref_language:
+                    available_chars = True
                 continue
             elif lang_segments[n] == ref_language:
                 correct_lang_chars += word_chars[n]
             elif not scores_lang or scores_lang[n] > 0.2:
                 wrong_lang_chars += word_chars[n]
-                
         if correct_lang_chars == 0:
+            if not available_chars:
+                logging.warning(f"Doc_name: '{id}' -No available segments have been found on the target language -Language: '{ref_language}' -Segment_languages: {set(lang_segments)}")
+            else:
+                logging.warning(f"Doc_name: '{id}' -Only too short segments have been found on the target language")
             return 0
         results = (correct_lang_chars / (correct_lang_chars + wrong_lang_chars)*10)
         return round(results, 1) if results <= 10 else 10
@@ -365,7 +377,7 @@ class DocumentScorer:
 
 ## _____ MAIN SCORING FUNCTION _______________________________________________________________________________________________________________
 
-    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys):
+    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys, id, logging):
 
         condensed_data = [(len(re.findall(self.word_pattern, segment)), len(re.findall(self.punctuation_pattern, segment)), len(re.findall(self.singular_chars_pattern, segment)), len(re.findall(self.numbers_pattern, segment))) for segment in document_text.split("\n")]
     
@@ -374,7 +386,7 @@ class DocumentScorer:
         singular_chars = [x[2] for x in condensed_data]
         numbers = [x[3] for x in condensed_data]
         ref_lang = ref_lang[0] if type(ref_lang) == list else ref_lang
-        language_score = self.__score_lang(ref_lang, lang_segments, scores_lang, word_chars)
+        language_score = self.__score_lang(ref_lang, lang_segments, scores_lang, word_chars, id, logging)
         punctuation_score = self.__score_punctuation(ref_lang, sum(punctuation_chars), sum(word_chars))
         singular_chars_score = self.__score_singular_chars(ref_lang, sum(singular_chars), sum(word_chars))
         numbers_score = self.__score_numbers(ref_lang, sum(numbers), sum(word_chars))
@@ -387,8 +399,8 @@ class DocumentScorer:
         return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1), round(informativeness_score, 1), document_text.replace("\n", "\\n")] #comment document if text is not wanted
 
 
-    def score_document(self, document, only_final_score=False):
-        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"])
+    def score_document(self, document, logging, only_final_score=False):
+        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging)
         if only_final_score:
             return score[0]
         else:
@@ -423,9 +435,11 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                     document["script"] = script
                     langs_fixed = []
                     for x in document["langs"]:
+                        #Script is added if "langs" includes language codes without script code
                         if re.match("[a-z]{3}$", x):
                             langs_fixed.append(f"{x}_{script}")
                         elif re.match("[a-z]{3}_[A-Z][a-z]{3}$", x):
+                            #Fix for very similar scripts or scripts that we want to be intended as the same, like Hans - Hant
                             segm_lang_script = x.split("_")
                             segm_script = ds.EQUIVALENT_SCRIPTS[segm_lang_script[1]] if segm_lang_script[1] in ds.EQUIVALENT_SCRIPTS else segm_lang_script[1]
                             langs_fixed.append(f"{segm_lang_script[0]}_{segm_script}")
@@ -433,7 +447,7 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                             langs_fixed.append(x)
                     
                     document["langs"] = langs_fixed
-                    document_score = ds.score_document(document)
+                    document_score = ds.score_document(document, logging)
                     docid = document["id"]
                     df.loc[docid] = [document_score]
                     
@@ -458,7 +472,6 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
 
 
 def main():
-    #logging_setup()
     args = docopt.docopt(__doc__, version='printbook v 1.0')
 
     ## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
