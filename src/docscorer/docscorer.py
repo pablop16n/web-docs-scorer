@@ -359,7 +359,7 @@ class DocumentScorer:
 
         long_segments = []
         for n in range(len(word_chars)):
-            if lang_segments[n].split("_")[0] == ref_language and word_chars[n] > long_text_min:
+            if lang_segments[n] == ref_language and word_chars[n] > long_text_min:
                 useful_chars = long_text_max if word_chars[n] > long_text_max else word_chars[n]
                 score = round((useful_chars - long_text_min) / (long_text_max - long_text_min) * 10 , 1)
                 long_segments.append(score)
