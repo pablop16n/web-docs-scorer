@@ -1,6 +1,6 @@
 """
 Usage:
-  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>] [--config_info_score=<dir>] [--config_lang_codes=<json>] [--config_lang_families=<csv>]
+  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>] [--config_info_score=<dir>] [--config_lang_codes=<json>] [--config_lang_families=<csv>] [--only_final_score=<yes/no>] [--text_in_output=<yes/no>]
 
 """
 
@@ -63,7 +63,7 @@ class DocumentScorer:
 
         #equivalent script systems
 
-        self.EQUIVALENT_SCRIPTS = {"Hant": "Hans"}
+        self.EQUIVALENT_SCRIPTS = {"hant": "hans"}
 
         ## _____ REFERENCE RATIO VALUES FOR SPANISH ________________________________________________________________________________________________
         #Current values in the provided csv    
@@ -377,7 +377,7 @@ class DocumentScorer:
 
 ## _____ MAIN SCORING FUNCTION _______________________________________________________________________________________________________________
 
-    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys, id, logging):
+    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys, id, logging, text_in_output):
 
         condensed_data = [(len(re.findall(self.word_pattern, segment)), len(re.findall(self.punctuation_pattern, segment)), len(re.findall(self.singular_chars_pattern, segment)), len(re.findall(self.numbers_pattern, segment))) for segment in document_text.split("\n")]
     
@@ -396,17 +396,18 @@ class DocumentScorer:
         informativeness_score = self.info.rate_information(document_text, script_sys)
         
         score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10, informativeness_score/10])
-        return [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1), round(informativeness_score, 1), document_text.replace("\n", "\\n")] #comment document if text is not wanted
+        
+        final_score = [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1), round(informativeness_score, 1)] 
+        
+        if text_in_output:
+            final_score.append(document_text.replace("\n", "\\n")) 
+        return final_score
 
-
-    def score_document(self, document, logging, only_final_score=False):
-        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging)
-        if only_final_score:
-            return score[0]
-        else:
-            return score
+    def score_document(self, document, logging, only_final_score=False, text_in_output=False):
+        return self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging, text_in_output=text_in_output)
+        
     
-def score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families):
+def score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families, text_in_output, only_final_score):
     ds=DocumentScorer(config=config, config_info=config_info, config_lang_codes=config_lang_codes, config_lang_families=config_lang_families)
     for json_f in os.listdir(input_path):
         if json_f.endswith(".jsonl"):
@@ -419,8 +420,8 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
             df = pd.DataFrame(columns=["score"])
 
             lang_script = json_f.split(".")[0].split("_")
-            language = lang_script[0]
-            script = lang_script[1]
+            language = lang_script[0].lower()
+            script = lang_script[1].lower()
             script = ds.EQUIVALENT_SCRIPTS[script] if script in ds.EQUIVALENT_SCRIPTS else script
             
             i = 0
@@ -435,10 +436,11 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                     document["script"] = script
                     langs_fixed = []
                     for x in document["langs"]:
+                        x=x.lower()
                         #Script is added if "langs" includes language codes without script code
                         if re.match("[a-z]{3}$", x):
                             langs_fixed.append(f"{x}_{script}")
-                        elif re.match("[a-z]{3}_[A-Z][a-z]{3}$", x):
+                        elif re.match("[a-z]{3}_[a-z]{4}$", x):
                             #Fix for very similar scripts or scripts that we want to be intended as the same, like Hans - Hant
                             segm_lang_script = x.split("_")
                             segm_script = ds.EQUIVALENT_SCRIPTS[segm_lang_script[1]] if segm_lang_script[1] in ds.EQUIVALENT_SCRIPTS else segm_lang_script[1]
@@ -447,25 +449,27 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                             langs_fixed.append(x)
                     
                     document["langs"] = langs_fixed
-                    document_score = ds.score_document(document, logging)
+                    document_score = ds.score_document(document, logging, text_in_output=text_in_output)
                     docid = document["id"]
                     df.loc[docid] = [document_score]
                     
                     i+=1
                     if i % 10000 == 0:
                         logging.info(f"{document['document_lang']} - {i}/{n_lines}")
-                
+
             df["wds_score"] = df.score.apply(lambda x: x[0])
-            df["language_score"] = df.score.apply(lambda x: x[1])
-            df["url_score"] = df.score.apply(lambda x: x[2])
-            df["punctuation_score"] = df.score.apply(lambda x: x[3])
-            df["singular_chars_score"] = df.score.apply(lambda x: x[4])
-            df["numbers_score"] = df.score.apply(lambda x: x[5])
-            df["repeated_score"] = df.score.apply(lambda x: x[6])
-            df["n_long_segments_score"] = df.score.apply(lambda x: x[7])
-            df["great_segment_score"] = df.score.apply(lambda x: x[8])
-            df["informativeness_score"] = df.score.apply(lambda x: x[9])
-            df["text"] = df.score.apply(lambda x: x[10]) #comment if text is not wanted
+            if not only_final_score:
+                df["language_score"] = df.score.apply(lambda x: x[1])
+                df["url_score"] = df.score.apply(lambda x: x[2])
+                df["punctuation_score"] = df.score.apply(lambda x: x[3])
+                df["singular_chars_score"] = df.score.apply(lambda x: x[4])
+                df["numbers_score"] = df.score.apply(lambda x: x[5])
+                df["repeated_score"] = df.score.apply(lambda x: x[6])
+                df["n_long_segments_score"] = df.score.apply(lambda x: x[7])
+                df["great_segment_score"] = df.score.apply(lambda x: x[8])
+                df["informativeness_score"] = df.score.apply(lambda x: x[9])
+                if text_in_output:
+                    df["text"] = df.score.apply(lambda x: x[10]) #comment if text is not wanted
             df.drop(columns=["score"], inplace=True)
             df.to_csv(writing_path)
             logging.info(f"Saved results in '{writing_path}'")
@@ -519,9 +523,21 @@ def main():
         logging.error(f"File {config_lang_families} not found")
         sys.exit(-1)
 
+    text_in_output=args['--text_in_output']
+    if not text_in_output or text_in_output == "no":
+        text_in_output = False
+    else:
+        text_in_output=True
+    
+    only_final_score=args['--only_final_score']
+    if not only_final_score or only_final_score == "no":
+        only_final_score = False
+    else:
+        only_final_score=True
+
     logging.info("Executing main program...")
     
-    score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families)
+    score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families, text_in_output, only_final_score)
     logging.info("Program finished")
 
 if __name__ == '__main__':
