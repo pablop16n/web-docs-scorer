@@ -404,7 +404,11 @@ class DocumentScorer:
         return final_score
 
     def score_document(self, document, logging, only_final_score=False, text_in_output=False):
-        return self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging, text_in_output=text_in_output)
+        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging, text_in_output=text_in_output)
+        if only_final_score:
+            return score[0]
+        else:
+            return score
         
     
 def score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families, text_in_output, only_final_score):
