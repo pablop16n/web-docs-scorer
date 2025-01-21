@@ -1,6 +1,6 @@
 """
 Usage:
-  docscorer.py --input=<dir> [--output=<dir>] [--config=<csv>] [--config_info_score=<dir>] [--config_lang_codes=<json>] [--config_lang_families=<csv>] [--only_final_score=<yes/no>] [--text_in_output=<yes/no>]
+  docscorer.py --input=<dir> [--output=<dir>] [--benchmark_config=<csv>] [--info_score_config=<dir>] [--lang_code_conversion=<json>] [--lang_families_config=<csv>] [--only_final_score=<y>] [--text_in_output=<y>]
 
 """
 
@@ -27,16 +27,63 @@ logging.basicConfig(
         stream=sys.stdout 
     )
 
+args = docopt.docopt(__doc__, version='printbook v 1.0')
 
+## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
+input_path=args['--input']
+if( not os.path.exists(input_path)):
+    logging.error(f"File {input_path} not found")
+    sys.exit(-1)
+
+output_path=args['--output']
+if not output_path:
+    output_path = input_path+"/document_scores"
+    if (not os.path.exists(output_path)):
+        os.makedirs(output_path)
+if( not os.path.exists(output_path)):
+    logging.error(f"Directory {output_path} not found")
+    sys.exit(-1)
+    
+## _____ CONFIGURATION FILES _______________________________________________________________________________________________________________
+CONFIG = {
+    #directories in CONFIG must be inicialized with a default value and other configuration values must be initially False
+    "benchmark_config": os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", 
+    "info_score_config": os.path.dirname(__file__)+"/configurations/interpolation_functions/",
+    "lang_code_conversion": os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json",
+    "lang_families_config": os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv",
+    "text_in_output": False,
+    "only_final_score": False
+}
+
+for config_name, is_dir in CONFIG.items():
+    selected_config = args[f"--{config_name}"]
+    if CONFIG[config_name]:
+        #Directories
+        if selected_config:
+            CONFIG[config_name] = selected_config #If not expressed, the default directory is used
+        if( not os.path.exists(CONFIG[config_name])):
+            logging.error(f"File {CONFIG[config_name]} for {config_name} not found")
+            sys.exit(-1)
+    else:
+        #Config values
+        if selected_config:
+            CONFIG[config_name] = True
+
+## _____ Class with all data and functions to be reused _______________________________________________________________________________________________________________
 class DocumentScorer:
-    def __init__(self,  config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv", config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions", config_lang_codes=os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json", config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"):
+    def __init__(self):
+        benchmark_config= CONFIG["benchmark_config"] if CONFIG else os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv"
+        info_score_config= CONFIG["info_score_config"] if CONFIG else os.path.dirname(__file__)+"/configurations/interpolation_functions"
+        lang_code_conversion= CONFIG["lang_code_conversion"] if CONFIG else os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json"
+        lang_families_config= CONFIG["lang_families_config"] if CONFIG else os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"
+
         ## _____ LANGUAGE CODE ADAPTION ________________________________________________________________________________________________
-        with open(config_lang_codes, "r", encoding="utf-8") as file:
+        with open(lang_code_conversion, "r", encoding="utf-8") as file:
             self.CODE_2_to_3_CONVERSION = json.load(file)
 
 
         ## _____ LANGUAGE ADAPTATION DATA ________________________________________________________________________________________________
-        df_lang_adaption = pd.read_csv(config)
+        df_lang_adaption = pd.read_csv(benchmark_config)
         LANGUAGES = df_lang_adaption.language_3_chars.to_list()
         
         MODELED_LANGS_NUMBERS = {f"{line.language_3_chars}_{line.script}" : round(line.numbers_score, 1) for _, line in df_lang_adaption.iterrows()}
@@ -44,7 +91,7 @@ class DocumentScorer:
         MODELED_LANGS_SINGULAR_CHARS = {f"{line.language_3_chars}_{line.script}" : round(line.singular_chars_score, 1) for _, line in df_lang_adaption.iterrows()}
         
         ## _____ LANGUAGES_SCRIPTS ________________________________________________________________________________________________
-        df_families = pd.read_csv(config_lang_families)
+        df_families = pd.read_csv(lang_families_config)
         df_lang_no_data = df_families[~df_families.language_3_chars.isin(LANGUAGES)]
         df_lang_data = df_families[df_families.language_3_chars.isin(LANGUAGES)]
         df_lang_adaption = pd.merge(df_lang_data, df_lang_adaption, on=['language_3_chars', 'script'], how='inner') #language families + medians in the same df
@@ -167,11 +214,11 @@ class DocumentScorer:
         # self.spaces_pattern = join_utf_blocks(SPACES)
 
         ## _____ INFORMATIVENESS SCORE _______________________________________________________________________________________________________________
-        self.info = Informativeness(config_info)
+        self.info = Informativeness(info_score_config)
 
 
     ## _____SCORING FUNCTIONS _______________________________________________________________________________________________________________
-    def __score_lang(self, ref_language, lang_segments, scores_lang, word_chars, id, logging):
+    def __score_lang(self, ref_language, lang_segments, scores_lang, word_chars, id):
         
         if scores_lang and (len(lang_segments) != len(scores_lang) or len(scores_lang) != len(word_chars)):
             return 10 #Errors from unmatched scores
@@ -191,9 +238,9 @@ class DocumentScorer:
                 wrong_lang_chars += word_chars[n]
         if correct_lang_chars == 0:
             if not available_chars:
-                logging.warning(f"Doc_name: '{id}' -No available segments have been found on the target language -Language: '{ref_language}' -Segment_languages: {set(lang_segments)}")
+                print(f"Doc_name: '{id}' -No available segments have been found on the target language -Language: '{ref_language}' -Segment_languages: {set(lang_segments)}")
             else:
-                logging.warning(f"Doc_name: '{id}' -Only too short segments have been found on the target language")
+                print(f"Doc_name: '{id}' -Only too short segments have been found on the target language")
             return 0
         results = (correct_lang_chars / (correct_lang_chars + wrong_lang_chars)*10)
         return round(results, 1) if results <= 10 else 10
@@ -377,7 +424,7 @@ class DocumentScorer:
 
 ## _____ MAIN SCORING FUNCTION _______________________________________________________________________________________________________________
 
-    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys, id, logging, text_in_output):
+    def score_text(self, ref_lang, lang_segments, scores_lang, document_text, script_sys, id, raw_score):
 
         condensed_data = [(len(re.findall(self.word_pattern, segment)), len(re.findall(self.punctuation_pattern, segment)), len(re.findall(self.singular_chars_pattern, segment)), len(re.findall(self.numbers_pattern, segment))) for segment in document_text.split("\n")]
     
@@ -386,7 +433,7 @@ class DocumentScorer:
         singular_chars = [x[2] for x in condensed_data]
         numbers = [x[3] for x in condensed_data]
         ref_lang = ref_lang[0] if type(ref_lang) == list else ref_lang
-        language_score = self.__score_lang(ref_lang, lang_segments, scores_lang, word_chars, id, logging)
+        language_score = self.__score_lang(ref_lang, lang_segments, scores_lang, word_chars, id)
         punctuation_score = self.__score_punctuation(ref_lang, sum(punctuation_chars), sum(word_chars))
         singular_chars_score = self.__score_singular_chars(ref_lang, sum(singular_chars), sum(word_chars))
         numbers_score = self.__score_numbers(ref_lang, sum(numbers), sum(word_chars))
@@ -396,23 +443,22 @@ class DocumentScorer:
         informativeness_score = self.info.rate_information(document_text, script_sys)
         
         score = (language_score*0.8 + long_segments_scores[0]/10 + long_segments_scores[1]/10) * custom_mean([url_score/10, punctuation_score/10, singular_chars_score/10, numbers_score/10, repeated_score/10, informativeness_score/10])
+
+        if raw_score:
+            return round(score, 1) if score <= 10 else 10
         
         final_score = [round(score, 1) if score <= 10 else 10, round(language_score, 1), round(url_score, 1), round(punctuation_score, 1), round(singular_chars_score, 1), round(numbers_score, 1), round(repeated_score, 1), round(long_segments_scores[0], 1), round(long_segments_scores[1], 1), round(informativeness_score, 1)] 
         
-        if text_in_output:
+        if CONFIG and CONFIG["text_in_output"]:
             final_score.append(document_text.replace("\n", "\\n")) 
         return final_score
 
-    def score_document(self, document, logging, only_final_score=False, text_in_output=False):
-        score = self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], logging=logging, text_in_output=text_in_output)
-        if only_final_score:
-            return score[0]
-        else:
-            return score
+    def score_document(self, document, raw_score=False):
+        return self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], raw_score=raw_score)
         
     
-def score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families, text_in_output, only_final_score):
-    ds=DocumentScorer(config=config, config_info=config_info, config_lang_codes=config_lang_codes, config_lang_families=config_lang_families)
+def score_directory(input_path, output_path):
+    ds=DocumentScorer()
     for json_f in os.listdir(input_path):
         if json_f.endswith(".jsonl"):
             if not re.match("[a-z]{3}_[A-Z][a-z]{3}$", json_f.split(".")[0]):
@@ -453,7 +499,7 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                             langs_fixed.append(x)
                     
                     document["langs"] = langs_fixed
-                    document_score = ds.score_document(document, logging, text_in_output=text_in_output)
+                    document_score = ds.score_document(document=document)
                     docid = document["id"]
                     df.loc[docid] = [document_score]
                     
@@ -462,7 +508,7 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                         logging.info(f"{document['document_lang']} - {i}/{n_lines}")
 
             df["wds_score"] = df.score.apply(lambda x: x[0])
-            if not only_final_score:
+            if not CONFIG["only_final_score"]:
                 df["language_score"] = df.score.apply(lambda x: x[1])
                 df["url_score"] = df.score.apply(lambda x: x[2])
                 df["punctuation_score"] = df.score.apply(lambda x: x[3])
@@ -472,76 +518,17 @@ def score_directory(input_path, output_path, config, config_info, config_lang_co
                 df["n_long_segments_score"] = df.score.apply(lambda x: x[7])
                 df["great_segment_score"] = df.score.apply(lambda x: x[8])
                 df["informativeness_score"] = df.score.apply(lambda x: x[9])
-                if text_in_output:
-                    df["text"] = df.score.apply(lambda x: x[10]) #comment if text is not wanted
+            if CONFIG["text_in_output"]:
+                df["text"] = df.score.apply(lambda x: x[10])
             df.drop(columns=["score"], inplace=True)
             df.to_csv(writing_path)
             logging.info(f"Saved results in '{writing_path}'")
 
 
 def main():
-    args = docopt.docopt(__doc__, version='printbook v 1.0')
-
-    ## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
-    
-    input_path=args['--input']
-    if( not os.path.exists(input_path)):
-        logging.error(f"File {input_path} not found")
-        sys.exit(-1)
-
-    output_path=args['--output']
-    if not output_path:
-        output_path = input_path+"/document_scores"
-        if (not os.path.exists(output_path)):
-            os.makedirs(output_path)
-    if( not os.path.exists(output_path)):
-        logging.error(f"Directory {output_path} not found")
-        sys.exit(-1)
-        
-    ## _____ CONFIGURATION FILES _______________________________________________________________________________________________________________
-    config=args['--config']
-    if not config:
-        config=os.path.dirname(__file__)+"/configurations/language_adaption/medians_language.csv"
-    if( not os.path.exists(config)):
-        logging.error(f"File {config} not found")
-        sys.exit(-1)
-    
-    config_info=args['--config_info_score']
-    if not config_info:
-        config_info=os.path.dirname(__file__)+"/configurations/interpolation_functions/"
-    if( not os.path.exists(config_info)):
-        logging.error(f"File {config_info} not found")
-        sys.exit(-1)
-
-    config_lang_codes=args['--config_lang_codes']
-    if not config_lang_codes:
-        config_lang_codes=os.path.dirname(__file__)+"/configurations/language_adaption/lang_code_conversion.json"
-    if( not os.path.exists(config_lang_codes)):
-        logging.error(f"File {config_lang_codes} not found")
-        sys.exit(-1)
-    
-    config_lang_families=args['--config_lang_families']
-    if not config_lang_families:
-        config_lang_families=os.path.dirname(__file__)+"/configurations/language_adaption/lang_families_script.csv"
-    if( not os.path.exists(config_lang_families)):
-        logging.error(f"File {config_lang_families} not found")
-        sys.exit(-1)
-
-    text_in_output=args['--text_in_output']
-    if not text_in_output or text_in_output == "no":
-        text_in_output = False
-    else:
-        text_in_output=True
-    
-    only_final_score=args['--only_final_score']
-    if not only_final_score or only_final_score == "no":
-        only_final_score = False
-    else:
-        only_final_score=True
-
     logging.info("Executing main program...")
     
-    score_directory(input_path, output_path, config, config_info, config_lang_codes, config_lang_families, text_in_output, only_final_score)
+    score_directory(input_path, output_path)
     logging.info("Program finished")
 
 if __name__ == '__main__':
