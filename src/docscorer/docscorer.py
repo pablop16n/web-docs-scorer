@@ -454,7 +454,7 @@ class DocumentScorer:
         return final_score
 
     def score_document(self, document, raw_score=False):
-        return self.score_text(ref_lang=document["document_lang"], lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], raw_score=raw_score)
+        return self.score_text(ref_lang=f"{document['document_lang']}_{document['script']}", lang_segments=document["langs"], scores_lang=document["scores"] if "scores" in document else False, document_text=document["text"], script_sys=document["script"], id=document["id"], raw_score=raw_score)
         
     
 def score_directory(input_path, output_path):
@@ -482,7 +482,7 @@ def score_directory(input_path, output_path):
             with open(documents, "r", encoding="utf-8") as file:
                 for document in file:
                     document = json.loads(document)
-                    document["document_lang"] = f"{language}_{script}"
+                    document["document_lang"] = language
                     document["script"] = script
                     langs_fixed = []
                     for x in document["langs"]:
