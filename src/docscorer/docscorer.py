@@ -248,28 +248,29 @@ class DocumentScorer:
 
     def __score_urls(self, ref_language, document, word_chars):
         menu_length = self.MENUS_AVERAGE_LENGTH[ref_language] if ref_language in self.MENUS_AVERAGE_LENGTH else self.MENUS_AVERAGE_LENGTH["standard"]
-        n_segments = len([x for x in word_chars if x > menu_length])
+        n_segments = [x for x in word_chars if x > menu_length]
         if n_segments == 0:
             return 10
     
-        url_quantity = max([document.count("www"), document.count("http")])
-        url_quantity = url_quantity/n_segments
+        reference_text_length = menu_length*100
+        ratio_respect_reference = sum(word_chars)/reference_text_length
+        url_quantity = max([document.count(r"www"), document.count(r"http")])/ratio_respect_reference
     
-        if url_quantity <= 0.05:
+        if url_quantity <= 3:
             return 10
-        elif url_quantity >= 1:
+        elif url_quantity >= 10:
             return 0
-        elif url_quantity > 0.3:
-            min_value = 1
-            max_value = 0.3
+        elif url_quantity > 5:
+            min_value = 10
+            max_value = 7
             min_range = 0
             max_range = 5
         else:
-            min_value = 0.3
-            max_value = 0.05
+            min_value = 7
+            max_value = 3
             min_range = 5
             max_range = 10
-            
+        
         return round(((url_quantity - min_value) / (max_value - min_value) * (max_range - min_range) + min_range), 2)
 
     def __score_punctuation(self, ref_language, punctuation_chars, word_chars):
