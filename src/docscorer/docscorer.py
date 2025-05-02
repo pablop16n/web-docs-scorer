@@ -254,6 +254,8 @@ class DocumentScorer:
     
         reference_text_length = menu_length*100
         ratio_respect_reference = sum(word_chars)/reference_text_length
+        if ratio_respect_reference == 0:
+            ratio_respect_reference = 0.1
         url_quantity = max([document.count(r"www"), document.count(r"http")])/ratio_respect_reference
     
         if url_quantity <= 3:
