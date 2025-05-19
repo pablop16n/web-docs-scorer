@@ -26,24 +26,7 @@ logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',
         stream=sys.stdout 
     )
-
-args = docopt.docopt(__doc__, version='printbook v 1.0')
-
-## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
-input_path=args['--input']
-if( not os.path.exists(input_path)):
-    logging.error(f"File {input_path} not found")
-    sys.exit(-1)
-
-output_path=args['--output']
-if not output_path:
-    output_path = input_path+"/document_scores"
-    if (not os.path.exists(output_path)):
-        os.makedirs(output_path)
-if( not os.path.exists(output_path)):
-    logging.error(f"Directory {output_path} not found")
-    sys.exit(-1)
-    
+   
 ## _____ CONFIGURATION FILES _______________________________________________________________________________________________________________
 CONFIG = {
     #directories in CONFIG must be inicialized with a default value and other configuration values must be initially False
@@ -54,20 +37,6 @@ CONFIG = {
     "text_in_output": False,
     "only_final_score": False
 }
-
-for config_name, is_dir in CONFIG.items():
-    selected_config = args[f"--{config_name}"]
-    if CONFIG[config_name]:
-        #Directories
-        if selected_config:
-            CONFIG[config_name] = selected_config #If not expressed, the default directory is used
-        if( not os.path.exists(CONFIG[config_name])):
-            logging.error(f"File {CONFIG[config_name]} for {config_name} not found")
-            sys.exit(-1)
-    else:
-        #Config values
-        if selected_config:
-            CONFIG[config_name] = True
 
 ## _____ Class with all data and functions to be reused _______________________________________________________________________________________________________________
 class DocumentScorer:
@@ -238,9 +207,9 @@ class DocumentScorer:
                 wrong_lang_chars += word_chars[n]
         if correct_lang_chars == 0:
             if not available_chars:
-                print(f"Doc_name: '{id}' -No available segments have been found on the target language -Language: '{ref_language}' -Segment_languages: {set(lang_segments)}")
+                logging.debug(f"Doc_name: '{id}' -No available segments have been found on the target language -Language: '{ref_language}' -Segment_languages: {set(lang_segments)}")
             else:
-                print(f"Doc_name: '{id}' -Only too short segments have been found on the target language")
+                logging.debug(f"Doc_name: '{id}' -Only too short segments have been found on the target language")
             return 0
         results = (correct_lang_chars / (correct_lang_chars + wrong_lang_chars)*10)
         return round(results, 1) if results <= 10 else 10
@@ -530,7 +499,38 @@ def score_directory(input_path, output_path):
 
 def main():
     logging.info("Executing main program...")
-    
+
+    args = docopt.docopt(__doc__, version='printbook v 1.0')
+
+    ## _____ INPUT-OUTPUT _______________________________________________________________________________________________________________
+    input_path=args['--input']
+    if( not os.path.exists(input_path)):
+        logging.error(f"File {input_path} not found")
+        sys.exit(-1)
+
+    output_path=args['--output']
+    if not output_path:
+        output_path = input_path+"/document_scores"
+        if (not os.path.exists(output_path)):
+            os.makedirs(output_path)
+    if( not os.path.exists(output_path)):
+        logging.error(f"Directory {output_path} not found")
+        sys.exit(-1)
+
+    for config_name, is_dir in CONFIG.items():
+        selected_config = args[f"--{config_name}"]
+        if CONFIG[config_name]:
+            #Directories
+            if selected_config:
+                CONFIG[config_name] = selected_config #If not expressed, the default directory is used
+            if( not os.path.exists(CONFIG[config_name])):
+                logging.error(f"File {CONFIG[config_name]} for {config_name} not found")
+                sys.exit(-1)
+        else:
+            #Config values
+            if selected_config:
+                CONFIG[config_name] = True
+
     score_directory(input_path, output_path)
     logging.info("Program finished")
 
