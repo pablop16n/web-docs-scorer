@@ -44,6 +44,6 @@ class Informativeness:
     def rate_information(self, text, script_code):
         text = re.sub("\d", "1", text.lower())
         compressed_weight = len(self.cctx.compress(bytes(text, 'utf-8')))
-        raw_weight = len(text.encode('utf-8'))
+        raw_weight = 1 if len(text.encode('utf-8')) == 0 else len(text.encode('utf-8'))
         compression = round((1 - compressed_weight / raw_weight) * 100, 1)
         return self.__information_score(raw_weight, compression, script_code)
