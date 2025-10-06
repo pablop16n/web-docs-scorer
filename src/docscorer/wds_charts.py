@@ -4,22 +4,23 @@ Usage:
 
 """
 
+# ruff: noqa: E501
+import sys
+from pathlib import Path
 
 import docopt
-import os
 import pandas as pd
-import sys
 
-args = docopt.docopt(__doc__, version='printbook v 1.0')
+args = docopt.docopt(__doc__, version="printbook v 1.0")
 
 
-input_path=args['--input']
-if( not os.path.exists(input_path)):
+input_path = Path(args["--input"])
+if not input_path.exists():
     print(f"File {input_path} not found")
     sys.exit(-1)
 
-output_path=args['--output']
-if( not os.path.exists(output_path)):
+output_path = Path(args["--output"])
+if not output_path.exists():
     print(f"Directory {output_path} not found")
     sys.exit(-1)
 
@@ -30,33 +31,53 @@ text2 = ""
 
 is_first = True
 print("Creating HTML view")
-for file in os.listdir(input_path):
+for file in input_path.iterdir():
     print(f"File analized: {file}")
-    df = pd.read_csv(os.path.join(input_path, file))
+    df = pd.read_csv(input_path / file)
     data_list = []
+    file_name = file.stem
     for n in range(101):
-        i = n/10
-        data_in_frame = df[(df.wds_score>round(i-0.1, 1))&(df.wds_score<=i)]
+        i = n / 10
+        data_in_frame = df[(df.wds_score > round(i - 0.1, 1)) & (df.wds_score <= i)]
         language_score = round(data_in_frame.language_score.mean(), 2)
-        url_score = round(data_in_frame.url_score.mean()/10, 2)
-        punctuation_score = round(data_in_frame.punctuation_score.mean()/10, 2)
-        singular_chars_score = round(data_in_frame.singular_chars_score.mean()/10, 2)
-        numbers_score = round(data_in_frame.numbers_score.mean()/10, 2)
-        repeated_score = round(data_in_frame.repeated_score.mean()/10, 2)
-        n_long_segments_score = round(data_in_frame.n_long_segments_score.mean()/10, 2)
-        great_segment_score = round(data_in_frame.great_segment_score.mean()/10, 2)
-        data_list.append([i, data_in_frame.shape[0], f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {singular_chars_score}, {numbers_score}, {repeated_score}, {n_long_segments_score}, {great_segment_score})"])
-    
-    
+        url_score = round(data_in_frame.url_score.mean() / 10, 2)
+        punctuation_score = round(data_in_frame.punctuation_score.mean() / 10, 2)
+        singular_chars_score = round(data_in_frame.singular_chars_score.mean() / 10, 2)
+        numbers_score = round(data_in_frame.numbers_score.mean() / 10, 2)
+        repeated_score = round(data_in_frame.repeated_score.mean() / 10, 2)
+        n_long_segments_score = round(
+            data_in_frame.n_long_segments_score.mean() / 10, 2
+        )
+        great_segment_score = round(data_in_frame.great_segment_score.mean() / 10, 2)
+        data_list.append(
+            [
+                i,
+                data_in_frame.shape[0],
+                f"cstm({i}, {language_score}, {url_score}, {punctuation_score}, {singular_chars_score}, {numbers_score}, {repeated_score}, {n_long_segments_score}, {great_segment_score})",
+            ]
+        )
+
     if is_first:
-        text0 = f"[['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];"
-        text1 += f"if (selectedValue === '{file.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];\n"
+        text0 = (
+            "[['Score', 'Count',"
+            + "{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]"
+            + f", {', '.join([str(x) for x in data_list])}];"
+        )
+        text1 += (
+            f"if (selectedValue === '{file_name.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count',"
+            + "{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]"
+            + f", {', '.join([str(x) for x in data_list])}];\n"
+        )
         is_first = False
 
     else:
-        
-        text1 += f"          {'}'} else if (selectedValue === '{file.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count'," +"{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]" + f", {', '.join([str(x) for x in data_list])}];\n"
-    text2 += f'<option value="{file.split("_")[0]}">{file.split("_")[0]}</option>\n'
+
+        text1 += (
+            f"          {'}'} else if (selectedValue === '{file_name.split('_')[0]}') {'{'}\n            newData = [['Score', 'Count',"
+            + "{'type': 'string', 'role': 'tooltip', 'p': {'html': true}}]"
+            + f", {', '.join([str(x) for x in data_list])}];\n"
+        )
+    text2 += f'<option value="{file_name.split("_")[0]}">{file_name.split("_")[0]}</option>\n'
 
 text0 = text0.replace("'cstm", "cstm").replace("']", "]").replace("nan", "null")
 text1 = text1.replace("'cstm", "cstm").replace("']", "]").replace("nan", "null")
@@ -76,7 +97,7 @@ html = """
         var initialData = __DATA0__
 
         function colorLanguageScore(value, minScore = 0, maxScore = 1,  color1 = '#FF0000', color2 = '#b5ff42') {
-          
+
           if (value < minScore) {
             value = minScore;
           }
@@ -84,7 +105,7 @@ html = """
           if (value > maxScore) {
             value = maxScore;
           }
-          
+
           // Convertimos los colores de hexadecimal a RGB
             let normalizedValue = (value - minScore) / (maxScore - minScore);
 
@@ -115,7 +136,7 @@ html = """
             // Combinamos los componentes de color en un solo string hexadecimal
             return '#' + hexR + hexG + hexB;
         }
-        
+
         function cstm(wdsScore, languageScore, urlgeScore, punctScore, singularCharsScore, numbersScore, spamScore, nLongSegmentsScore, greatSegmentScore) {
           return '<div style="padding:5px;">' +
               '<table>' + '<tr>' +
@@ -129,9 +150,9 @@ html = """
               '<td><b>Repeated score: </b><span class="score">' + spamScore + '<span class="color" style="background-color: ' + colorLanguageScore(spamScore, 0.5, 1) +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Long segments score: </b><span class="score">' + nLongSegmentsScore + '<span class="color" style="background-color: ' + colorLanguageScore(nLongSegmentsScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '<tr>' +
               '<td><b>Superlong segments score: </b><span class="score">' + greatSegmentScore + '<span class="color" style="background-color: ' + colorLanguageScore(greatSegmentScore, 0, 1, '#CCB22E') +'; "></span></span></td>' + '</tr>' + '</table>' + '</div>';
-        }      
-        
-        
+        }
+
+
         drawColumnChart(initialData); // Dibujar el gráfico inicial
 
         // Manejar el cambio en el select
@@ -140,7 +161,7 @@ html = """
           var newData;
 
           // Seleccionar los datos apropiados según la opción elegida
-          
+
           __DATA1__
 
           drawColumnChart(newData); // Dibujar el gráfico con los nuevos datos
@@ -153,12 +174,12 @@ html = """
           legend: { position: 'none' },
           colors: ['#FFA633'],
           tooltip: { isHtml: true } // Habilitar tooltip con HTML
-          
+
         };
 
         var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
         chart.draw(google.visualization.arrayToDataTable(data), options);
-      
+
       }
     </script>
   </head>
@@ -194,20 +215,20 @@ html = """
     }
 
     #chart_div {
-      width: 100%; 
+      width: 100%;
       height: 700px;
     }
 
     .score {
-      display: inline-flex; 
-      justify-content: center; 
+      display: inline-flex;
+      justify-content: center;
       align-items:flex-start;
     }
 
     .color {
-      height:15px; 
-      width: 15px; 
-      border-radius: 50%; 
+      height:15px;
+      width: 15px;
+      border-radius: 50%;
       margin-left: 5px
     }
 
@@ -219,15 +240,15 @@ html = """
     <div class="container">
       <!-- Agregar el select para elegir los datos -->
     <p>Select language <select id="dataSelect">
-      
+
         __DATA2__
 
     </select></p>
-    
+
     <!-- Div para el gráfico -->
     <div id="chart_div"></div>
     </div>
-    
+
   </body>
 </html>
 
@@ -236,10 +257,8 @@ html = """
 
 
 html = html.replace("__DATA0__", text0)
-html = html.replace("__DATA1__", text1+"\n}")
+html = html.replace("__DATA1__", text1 + "\n}")
 html = html.replace("__DATA2__", text2)
 
-with open(os.path.join(output_path, "wds_scores.html"), "w", encoding="utf8") as file:
-    file.write(html)
-
-    
+with open(output_path / "wds_scores.html", "w", encoding="utf8") as f:
+    f.write(html)

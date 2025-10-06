@@ -1,6 +1,8 @@
 import re
+from typing import List
 
-def join_utf_blocks(u_list, inverse=False):
+
+def join_utf_blocks(u_list: List[str], inverse: bool = False) -> re.Pattern[str]:
     inversion = "^" if inverse else ""
     prefixes = ["u", "U000"]
     pattern = f"[{inversion}"
@@ -10,24 +12,15 @@ def join_utf_blocks(u_list, inverse=False):
         pattern = f"{pattern}{cases}"
     return re.compile(f"{pattern}]")
 
-def custom_mean(neg_values):
-        #Negative values
-        minor1 = min(neg_values)
-        neg_values.remove(minor1)
-        minor2 = min(neg_values)
-        neg_values.remove(minor2)
-        return minor1 * minor2 * (sum(neg_values)/len(neg_values))
+
+def custom_mean(neg_values: List[float]) -> float:
+    # Negative values
+    minor1 = min(neg_values)
+    neg_values.remove(minor1)
+    minor2 = min(neg_values)
+    neg_values.remove(minor2)
+    return minor1 * minor2 * (sum(neg_values) / len(neg_values))
 
 
-def precision_round(number):
-    number_str = str(number)
-    first_digit_index = next((i for i, d in enumerate(number_str) if d != '0' and d != '.'), None)
-    if first_digit_index != None:
-        to_round_digits = max(0, 1 - first_digit_index)
-        rounded_value = round(number, to_round_digits)
-    else:
-        rounded_value = round(number, 1)
-    return rounded_value
-
-def average(list):
-    return round(sum(list)/len(list),3)
+def average(numbers: List[float]) -> float:
+    return round(sum(numbers) / len(numbers), 3)
