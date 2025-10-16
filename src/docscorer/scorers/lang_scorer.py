@@ -18,7 +18,7 @@ class LangScorer:
         if len(lang_segments) != len(
             word_chars
         ):
-            return 10  # Errors from unmatched scores
+            return 0  # Errors from unmatched scores
         menu_length = get_threshold(self.config.MENUS_AVERAGE_LENGTH, ref_language)
         correct_lang_chars = 0
         wrong_lang_chars = 0

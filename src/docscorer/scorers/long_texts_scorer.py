@@ -21,14 +21,12 @@ class LongTextScorer:
         long_segments = []
         for n in range(len(word_chars)):
             if lang_segments[n] == ref_language and word_chars[n] > long_text_min:
-                useful_chars = (
-                    long_text_max if word_chars[n] > long_text_max else word_chars[n]
-                )
+                useful_chars = long_text_max if word_chars[n] > long_text_max else word_chars[n]
                 score = (useful_chars - long_text_min) / (long_text_max - long_text_min)
                 long_segments.append(score)
 
         n_segments = len(long_segments) if len(long_segments) <= 10 else 10
-        highter_segments = [x for x in long_segments if x > 5]
+        highter_segments = [x for x in long_segments if x > 0.5]
         score_very_long_segments = 0.0
         if highter_segments:
             score_very_long_segments = (

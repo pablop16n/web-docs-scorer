@@ -7,7 +7,6 @@ from docscorer.scorers.utils import get_threshold, scale_value
 
 class URLThreshold(Enum):
     LOW = 3
-    MID = 5
     HIGH = 10
 
 
@@ -35,9 +34,6 @@ class URLScorer:
 
         if url_quantity <= URLThreshold.LOW.value:
             return self.MAX_SCORE
-        if url_quantity >= URLThreshold.MID.value:
+        if url_quantity >= URLThreshold.HIGH.value:
             return self.MIN_SCORE
-        if url_quantity > URLThreshold.HIGH.value:
-            return scale_value(url_quantity, 1.0, 0.7, 0.0, 0.5)
-        # else: between 3 and 5
-        return scale_value(url_quantity, 0.7, 0.3, 0.5, 1.0)
+        return scale_value(url_quantity, URLThreshold.LOW.value, URLThreshold.HIGH.value, self.MAX_SCORE, self.MIN_SCORE)

@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
+import math
 import pandas as pd
 
 from docscorer.configuration import ScorerConfiguration
@@ -16,7 +16,6 @@ from docscorer.scorers.numbers_scorer import NumsScorer
 from docscorer.scorers.punct_scorer import PunctScorer
 from docscorer.scorers.repeated_scorer import RepeatedScorer
 from docscorer.scorers.url_scorer import URLScorer
-from docscorer.scorers.short_segm_scorer import ShortSegmentsScorer
 from docscorer.utils import custom_mean
 
 
@@ -32,7 +31,6 @@ class ScoreResult:
     url: float
     informativeness: float
     long_segments: Tuple[float, float]  # [short_score, long_score]
-    short_segments: float
 
 
 class DocumentScorer:
@@ -50,7 +48,6 @@ class DocumentScorer:
         self.lang_scorer = LangScorer(self.config)
         self.long_text_scorer = LongTextScorer(self.config)
         self.repeated_scorer = RepeatedScorer(self.config)
-        self.short_segm_scorer = ShortSegmentsScorer(self.config)
 
     def _extract_features(self, document_text: str) -> dict[str, list[int]]:
         """Extract counts of words, punctuation, sing. chars, and numbers per line."""
@@ -102,7 +99,6 @@ class DocumentScorer:
                 ref_lang, lang_segments, features["word_chars"]
             ),
             informativeness=self.info_scorer.score(document_text, ref_script),
-            short_segments=self.short_segm_scorer.score(ref_lang, features["word_chars"]),
         )
 
     def _aggregate_scores(self, scores: ScoreResult) -> float:
@@ -119,14 +115,40 @@ class DocumentScorer:
                 scores.numbers,
                 scores.repeated,
                 scores.informativeness,
-                scores.short_segments,
             ]
         )
         return score
         # return round(min(score, 1.0), 3)
 
+    def _new_aggregate_scores(self, scores: ScoreResult, alpha = 100) -> float:
+        """Aggregate individual scores into a single overall score."""
+        def exponent(subscore, subscores, alpha, multiplier=3):
+            a = subscore**-alpha    
+            b = sum([x**-alpha for x in subscores])
+            return a/b*multiplier
+        
+        penalty_scores = [
+                scores.url,
+                scores.punctuation,
+                scores.singular_chars,
+                scores.numbers,
+                scores.repeated,
+                scores.informativeness,
+            ]
+        if any(x < 0.1 for x in penalty_scores):
+            return 0.0
+        P = math.prod([x**exponent(x, penalty_scores, alpha) for x in penalty_scores])
+        
+        base_score = (
+            scores.language * 0.8
+            + scores.long_segments[0]/10
+            + scores.long_segments[1]/10
+        ) * P
+        return base_score
+
     def _format_output(
         self,
+        new_overall_score: float,
         overall_score: float,
         scores: ScoreResult,
         document_text: str,
@@ -137,6 +159,7 @@ class DocumentScorer:
             return overall_score
 
         final_score: list[float | str] = [
+            new_overall_score,
             overall_score,
             round(scores.language, 2),
             round(scores.url, 2),
@@ -147,7 +170,6 @@ class DocumentScorer:
             round(scores.long_segments[0], 2),
             round(scores.long_segments[1], 2),
             round(scores.informativeness, 2),
-            round(scores.short_segments, 2),
         ]
 
         if self.config.text_in_output:
@@ -180,4 +202,5 @@ class DocumentScorer:
             features = features,
         )
         overall_score = self._aggregate_scores(scores)
-        return self._format_output(overall_score, scores, document_text, raw_score)
+        new_overall_score = self._new_aggregate_scores(scores)
+        return self._format_output(new_overall_score, overall_score, scores, document_text, raw_score)
