@@ -13,8 +13,8 @@ class ScorerConfiguration:
     REF_LANGUAGE_KEY = "spa_latn"
     MENU_LENGTH = 30
     PUNCT_MAX = 25.0
-    PUNCT_BAD = (13.0, 0.5)
-    PUNCT_SEMIBAD = (9.0, 0.3)
+    PUNCT_BAD = (13.0, 0.3)
+    PUNCT_SEMIBAD = (9.0, 0.5)
     PUNCT_DESIRED_MAX = 2.5
     PUNCT_DESIRED_MIN = 0.9
     SINGULAR_CHARS_MAX = 10.0
@@ -29,6 +29,12 @@ class ScorerConfiguration:
     LONG_TEXT_MAX_VALUE = 1000
     DESIRED_LONG_TEXTS = 10
     EQUIVALENT_SCRIPTS = {"hant": "hans"}
+    ACCUM_NUMBERS_NOT_PENALIZED = 50
+    ACCUM_NUMBERS_MID_PENALIZED= 500
+    ACCUM_NUMBERS_HARD_PENALIZED = 1000
+    ACCUM_SINGULAR_NOT_PENALIZED = 30
+    ACCUM_SINGULAR_MID_PENALIZED= 150
+    ACCUM_SINGULAR_HARD_PENALIZED = 250
 
     def __init__(self, args: Optional[Dict[str, Any]] = None):
         self.args = args or {}

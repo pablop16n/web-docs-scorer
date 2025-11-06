@@ -23,4 +23,16 @@ def custom_mean(neg_values: List[float]) -> float:
 
 
 def average(numbers: List[float]) -> float:
-    return round(sum(numbers) / len(numbers), 3)
+    return sum(numbers) / len(numbers)
+
+def remove_delimitators(punct_chars: list, word_chars: list, number_chars: list) -> list:
+    if len(punct_chars) != len(word_chars) or len(punct_chars) != len(number_chars):
+        return punct_chars
+    punct_without_delimitators = []
+    for n in range(len(punct_chars)):
+        if not number_chars[n] and not word_chars[n] and punct_chars[n] > 5:
+            #is a delimitator
+            punct_without_delimitators.append(0)
+        else:
+            punct_without_delimitators.append(punct_chars[n])
+    return punct_without_delimitators

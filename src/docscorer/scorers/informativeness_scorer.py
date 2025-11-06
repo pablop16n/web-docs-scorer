@@ -87,7 +87,7 @@ class InformativenessScorer:
         )
 
     def score(self, text: str, script_code: str) -> float:
-        text = re.sub(r"\d", "1", text.lower())
+        # text = re.sub(r"\d", "1", text.lower())
         compressed_weight = len(self.cctx.compress(text.encode("utf-8")))
         raw_weight = max(1, len(text.encode("utf-8")))
         compression = round((1 - compressed_weight / raw_weight) * 100, 1)
