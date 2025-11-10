@@ -94,19 +94,26 @@ class ScorerConfiguration:
 
     def _prepare_modeled_scores(self) -> None:
         self.modeled_numbers = {
-            f"{line.language_3_chars}_{line.script}": round(line.numbers_score, 1)
+            f"{line.language_3_chars}_{line.script}": round(line.numbers_score, 2)
             for _, line in self.df_lang_adaption.iterrows()
         }
         self.modeled_punctuation = {
-            f"{line.language_3_chars}_{line.script}": round(line.punctuation_score, 1)
+            f"{line.language_3_chars}_{line.script}": round(line.punctuation_score, 2)
             for _, line in self.df_lang_adaption.iterrows()
         }
         self.modeled_singular_chars = {
             f"{line.language_3_chars}_{line.script}": round(
-                line.singular_chars_score, 1
+                line.singular_chars_score, 2
             )
             for _, line in self.df_lang_adaption.iterrows()
         }
+        self.SCRIPTS = self.df_lang_adaption.script.unique() #covered scripts
+        for script in self.df_lang_adaption.script.unique():
+            df_selected = self.df_lang_adaption[self.df_lang_adaption.script == script]
+            self.modeled_numbers[script] = round(df_selected.numbers_score.mean(), 2)
+            self.modeled_punctuation[script] = round(df_selected.punctuation_score.mean(), 2)
+            self.modeled_singular_chars[script] = round(df_selected.singular_chars_score.mean(), 2)
+        
 
     def _adapt_missing_languages(self) -> None:
         df_lang_no_data = self.df_families[
@@ -240,7 +247,7 @@ class ScorerConfiguration:
 
         # Menu adaptation
         self.MENUS_AVERAGE_LENGTH = {
-            lang: round(ref_punct * self.MENU_LENGTH / val)
+            lang: round(ref_punct * self.MENU_LENGTH / val) 
             for lang, val in self.modeled_punctuation.items()
         }
         self.MENUS_AVERAGE_LENGTH["standard"] = average(

@@ -6,7 +6,13 @@ def get_threshold(
 ) -> Any:
     """Fetch a language-specific threshold, falling back to `default_key`."""
     try:
-        return table.get(language, table[default_key])
+        script = language.split("_")[1]
+        if language in table:
+            return table[language]
+        elif script in table:
+            return table[script]
+        else:
+            return table[default_key]
     except KeyError:
         raise KeyError(
             f"Neither '{language}' nor default '{default_key}' found in {table}."
