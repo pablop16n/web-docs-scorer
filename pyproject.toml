@@ -45,9 +45,12 @@ Homepage = "https://github.com/pablop16n/web-docs-scorer/"
 "HPLT Project" = "https://hplt-project.org"
 
 
-[tool.setuptools.package-data]
-docscorer = [ "configurations/*"]
+#[tool.setuptools.package-data]
+#docscorer = [ "configurations/*"]
+#configuration = [  "configurations/*"]
 
+[tool.setuptools.package-data]
+docscorer = [ "configurations/language_adaption/*", "configurations/interpolation_functions/*"]
 
 [project.optional-dependencies]
 dev = [
