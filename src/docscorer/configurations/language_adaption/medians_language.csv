@@ -1,6 +1,7 @@
 language_3_chars,language_2_chars,language_score,numbers_score,punctuation_score,singular_chars_score,script
 afr,af,6.9,1.8,3.6,0.7,latn
 arb,ar,8.5,1.8,2.4,0.4,arab
+ara,ar,8.5,1.8,2.4,0.4,arab
 azj,az,7.3,2.2,3.0,0.5,latn
 bel,be,9.0,1.8,3.3,0.7,cyrl
 ben,bn,8.6,1.2,1.7,0.4,beng
