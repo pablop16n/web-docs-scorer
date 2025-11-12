@@ -1,0 +1,52 @@
+{
+  "GROUPS": {
+    "GROUP_A": [
+      "grek",
+      "latn",
+      "cyrl",
+      "hang",
+      "jpan"
+    ],
+    "GROUP_B": [
+      "deva",
+      "beng",
+      "telu",
+      "tibt",
+      "geor",
+      "gujr",
+      "khmr",
+      "knda",
+      "laoo",
+      "mlym",
+      "mymr",
+      "orya",
+      "sinh",
+      "taml",
+      "thai",
+      "olck"
+    ],
+    "GROUP_C": [
+      "arab",
+      "armn",
+      "athi",
+      "guru",
+      "hebr"
+    ],
+    "GROUP_D": [
+      "hans",
+      "hant"
+    ]
+  },
+  "FUNCTION_FILES": {
+    "GROUP_A": "function_group_a.pkl",
+    "GROUP_B": "function_group_b.pkl",
+    "GROUP_C": "function_group_c.pkl",
+    "GROUP_D": "function_group_d.pkl"
+  },
+  "OUTSIDERS_FIX": {
+    "GROUP_A": 180000,
+    "GROUP_B": 250000,
+    "GROUP_C": 180000,
+    "GROUP_D": 75000
+  }
+}

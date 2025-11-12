@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+
 from importlib.metadata import version
 
-name="docscorer"
+from docscorer.docscorer import DocumentScorer
+from docscorer.configuration import ScorerConfiguration
+
+name = "docscorer"
 __version__ = version(name)
 
-from .docscorer import DocumentScorer
+__all__ = ["DocumentScorer", "ScorerConfiguration"]
