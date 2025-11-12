@@ -25,9 +25,9 @@ class PunctScorer:
         elif proportion_bad > 0.4:
             return 0
         elif proportion_bad > 0.05 and proportion_bad < 0.2:
-            return scale_value(proportion_bad, 0.2, 0.05, 0.5, 1.0)
+            return scale_value(proportion_bad, 0.2, 0.05, 0.6, 1.0)
         else:
-            return scale_value(proportion_bad, 0.4, 0.2, 0, 0.5)
+            return scale_value(proportion_bad, 0.4, 0.2, 0, 0.6)
 
     def score(
         self, ref_language: str, num_punctuation_chars: int, num_word_chars: int, punct_chars: list, 

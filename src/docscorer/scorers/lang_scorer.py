@@ -24,7 +24,7 @@ class LangScorer:
         wrong_lang_chars = 0
         available_chars = False
         for n in range(len(lang_segments)):
-            if word_chars[n] <= menu_length and lang_segments[n] == ref_language:
+            if word_chars[n] <= menu_length:
                 available_chars = True
                 continue
             elif lang_segments[n] == ref_language:
@@ -39,12 +39,15 @@ class LangScorer:
                     f"- Language: '{ref_language}' - Segment_languages: "
                     f"{set(lang_segments)}"
                 )
+                return 0.0
 
             else:
-                print(
-                    f"Doc_name: '{id}' - "
-                    "Only too short segments have been found on the target language"
-                )
-            return 0
+                if all([x == ref_language for x in lang_segments]):
+                    return 1.0
+                # print(
+                #     f"Doc_name: '{id}' - "
+                #     "Only too short segments have been found on the target language"
+                # )
+                return 0.0
         results = correct_lang_chars / (correct_lang_chars + wrong_lang_chars)
         return min(results, 1.0)

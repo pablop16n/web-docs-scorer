@@ -102,7 +102,7 @@ class DocumentScorer:
             numbers=self.numbers_scorer.score(ref_lang, num_numbers, num_word_chars, 
                                               features["numbers"], features["word_chars"]
             ),
-            repeated=self.repeated_scorer.score(ref_lang, document_text),
+            repeated=self.repeated_scorer.score(document_text),
             url=self.url_scorer.score(ref_lang, document_text, features["word_chars"]),
             long_segments=self.long_text_scorer.score(
                 ref_lang, lang_segments, features["word_chars"]
@@ -151,7 +151,7 @@ class DocumentScorer:
             return overall_score
 
         final_score: list[float | str] = [
-            overall_score,
+            round(overall_score, 2),
             round(scores.language, 2),
             round(scores.url, 2),
             round(scores.punctuation, 2),

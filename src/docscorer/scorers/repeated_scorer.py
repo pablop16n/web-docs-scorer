@@ -1,6 +1,6 @@
 from docscorer.configuration import ScorerConfiguration
 from docscorer.scorers.utils import get_threshold
-
+from collections import Counter
 
 class RepeatedScorer:
     MAX_SCORE = 1.0
@@ -8,14 +8,13 @@ class RepeatedScorer:
     def __init__(self, config: ScorerConfiguration):
         self.config = config
 
-    def score(self, ref_language: str, document: str) -> float:
-        menu_length = get_threshold(self.config.MENUS_AVERAGE_LENGTH, ref_language)
-
-        segments = [line for line in document.split("\n") if len(line) >= menu_length]
+    def score(self, document: str) -> float:
+        segments = document.split("\n")
+        segments = [seg for seg in segments if len(seg) > 4]
         if not segments:
             return self.MAX_SCORE
-
-        num_duplicates = len(segments) - len(set(segments))
-        repetition_ratio = num_duplicates / len(segments)
+        occurr_per_seg = Counter(segments)
+        repeated = sum(ocur for ocur in occurr_per_seg.values() if ocur > 1)
+        repetition_ratio = repeated / len(segments)
         score = (1 - repetition_ratio)
-        return score
+        return score if score >= 0 else 0.0

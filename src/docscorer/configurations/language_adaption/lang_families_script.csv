@@ -102,6 +102,7 @@ en,eng,indo-european,germanic,latn
 eo,epo,indo-european,romance,latn
 ,esg,dravidian,dravidian,deva
 et,est,uralic,finnic,latn
+et,ekk,uralic,finnic,latn
 eu,eus,basque,basque,latn
 ,eve,altaic,tungusic,cyrl
 ee,ewe,niger-congo,tano,latn
@@ -124,6 +125,7 @@ ga,gle,indo-european,celtic,latn
 gl,glg,indo-european,romance,latn
 gv,glv,indo-european,celtic,latn
 gn,grn,tupian,maweti-guarani,latn
+gn,gug,tupian,maweti-guarani,latn
 gu,guj,indo-european,indic,khoj
 gu,guj,indo-european,indic,gujr
 ht,hat,indo-european,creoles and pidgins,latn
@@ -185,6 +187,7 @@ ky,kir,altaic,turkic,latn
 kv,kom,uralic,permic,latn
 kv,kom,uralic,permic,cyrl
 kg,kon,niger-congo,bantu,latn
+kg,ktu,niger-congo,bantu,latn
 ko,kor,korean,korean,hang
 ,kum,altaic,turkic,latn
 ,kum,altaic,turkic,cyrl
@@ -386,6 +389,9 @@ yo,yor,niger-congo,defoid,latn
 ,yue,sino-tibetan,chinese,hans
 ,yue,sino-tibetan,chinese,hant
 ,zha,tai-kadai,kam-tai,latn
+zh,cmn,sino-tibetan,chinese,phag
+zh,cmn,sino-tibetan,chinese,hans
+zh,cmn,sino-tibetan,chinese,hant
 zh,zho,sino-tibetan,chinese,phag
 zh,zho,sino-tibetan,chinese,hans
 zh,zho,sino-tibetan,chinese,hant

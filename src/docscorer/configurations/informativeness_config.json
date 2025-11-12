@@ -1,40 +1,40 @@
 {
   "GROUPS": {
     "GROUP_A": [
-      "Grek",
-      "Latn",
-      "Cyrl",
-      "Hang",
-      "Jpan"
+      "grek",
+      "latn",
+      "cyrl",
+      "hang",
+      "jpan"
     ],
     "GROUP_B": [
-      "Deva",
-      "Beng",
-      "Telu",
-      "Tibt",
-      "Geor",
-      "Gujr",
-      "Khmr",
-      "Knda",
-      "Laoo",
-      "Mlym",
-      "Mymr",
-      "Orya",
-      "Sinh",
-      "Taml",
-      "Thai",
-      "Olck"
+      "deva",
+      "beng",
+      "telu",
+      "tibt",
+      "geor",
+      "gujr",
+      "khmr",
+      "knda",
+      "laoo",
+      "mlym",
+      "mymr",
+      "orya",
+      "sinh",
+      "taml",
+      "thai",
+      "olck"
     ],
     "GROUP_C": [
-      "Arab",
-      "Armn",
-      "Ethi",
-      "Guru",
-      "Hebr"
+      "arab",
+      "armn",
+      "athi",
+      "guru",
+      "hebr"
     ],
     "GROUP_D": [
-      "Hans",
-      "Hant"
+      "hans",
+      "hant"
     ]
   },
   "FUNCTION_FILES": {

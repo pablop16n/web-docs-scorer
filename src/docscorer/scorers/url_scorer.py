@@ -8,11 +8,13 @@ from docscorer.scorers.utils import get_threshold, scale_value
 class URLThreshold(Enum):
     LOW = 3
     HIGH = 10
+    MID = 5
 
 
 class URLScorer:
     MAX_SCORE = 1.0
     MIN_SCORE = 0.0
+    MID_VALUE = 0.7
 
     def __init__(self, config: ScorerConfiguration):
         self.config = config
@@ -26,7 +28,7 @@ class URLScorer:
             return self.MAX_SCORE
 
         # Normalization factor based on menu length
-        reference_text_length = menu_length * 100
+        reference_text_length = menu_length * 80
         ratio_respect_reference = sum(word_chars) / reference_text_length or 0.1
 
         url_count = max(document.count("www"), document.count("http"))
@@ -36,4 +38,6 @@ class URLScorer:
             return self.MAX_SCORE
         if url_quantity >= URLThreshold.HIGH.value:
             return self.MIN_SCORE
-        return scale_value(url_quantity, URLThreshold.LOW.value, URLThreshold.HIGH.value, self.MAX_SCORE, self.MIN_SCORE)
+        if url_quantity >= URLThreshold.MID.value:
+            return scale_value(url_quantity, URLThreshold.MID.value, URLThreshold.HIGH.value, self.MID_VALUE, self.MIN_SCORE)
+        return scale_value(url_quantity, URLThreshold.LOW.value, URLThreshold.MID.value, self.MAX_SCORE, self.MID_VALUE)

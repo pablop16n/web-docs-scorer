@@ -13,7 +13,7 @@ deu,de,8.7,1.2,2.8,0.4,latn
 ell,el,8.8,1.85,2.7,0.6,grek
 eng,en,8.6,1.3,2.9,0.5,latn
 epo,eo,8.2,1.3,3.7,0.4,latn
-est,et,8.4,1.3,2.9,0.3,latn
+ekk,et,8.4,1.3,2.9,0.3,latn
 eus,eu,9.0,1.4,2.9,0.3,latn
 fas,fa,8.4,1.5,2.6,0.3,arab
 fil,tl,7.8,1.4,3.1,0.3,latn
@@ -72,4 +72,4 @@ ukr,uk,8.9,1.5,3.3,0.5,cyrl
 urd,ur,7.7,1.8,2.1,0.3,arab
 uzb,uz,7.7,1.9,4.6,1.9,latn
 vie,vi,8.6,2.4,3.0,0.5,latn
-zho,zh,4.8,9.0,9.9,1.5,hans
+cmn,zh,4.8,9.0,9.9,1.5,hans
