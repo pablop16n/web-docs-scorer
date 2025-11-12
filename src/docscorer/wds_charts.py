@@ -16,12 +16,12 @@ args = docopt.docopt(__doc__, version="printbook v 1.0")
 
 input_path = Path(args["--input"])
 if not input_path.exists():
-    print(f"File {input_path} not found")
+    print(f"File {input_path} not found", file=sys.stderr)
     sys.exit(-1)
 
 output_path = Path(args["--output"])
 if not output_path.exists():
-    print(f"Directory {output_path} not found")
+    print(f"Directory {output_path} not found", file=sys.stderr)
     sys.exit(-1)
 
 
@@ -30,7 +30,7 @@ text1 = ""
 text2 = ""
 
 is_first = True
-print("Creating HTML view")
+print("Creating HTML view", file=sys.stderr)
 for file in input_path.iterdir():
     print(f"File analized: {file}")
     df = pd.read_csv(input_path / file)

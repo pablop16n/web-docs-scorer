@@ -1,3 +1,5 @@
+import sys
+
 from typing import List, Optional
 
 from docscorer.configuration import ScorerConfiguration
@@ -37,7 +39,7 @@ class LangScorer:
                     f"Doc_name: '{id}' - No available segments have been found on "
                     "the target language\n"
                     f"- Language: '{ref_language}' - Segment_languages: "
-                    f"{set(lang_segments)}"
+                    f"{set(lang_segments)}", file=sys.stderr
                 )
                 return 0.0
 
@@ -47,6 +49,7 @@ class LangScorer:
                 # print(
                 #     f"Doc_name: '{id}' - "
                 #     "Only too short segments have been found on the target language"
+                #  , file=sys.stderr   	
                 # )
                 return 0.0
         results = correct_lang_chars / (correct_lang_chars + wrong_lang_chars)

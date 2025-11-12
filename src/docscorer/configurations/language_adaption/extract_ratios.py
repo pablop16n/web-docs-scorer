@@ -167,12 +167,12 @@ def score_lang(
 
 input_path = args["--input"]
 if not os.path.exists(input_path):
-    print(f"File {input_path} not found")
+    print(f"File {input_path} not found", file=sys.stderr)
     sys.exit(-1)
 
 output_path = args["--output"]
 if not os.path.exists(output_path):
-    print(f"Directory {output_path} not found")
+    print(f"Directory {output_path} not found",file=sys.stderr )
     sys.exit(-1)
 df_medians = pd.DataFrame(
     columns=[
@@ -198,10 +198,10 @@ for json_f in os.listdir(input_path):
         )
 
         i = 0
-        print(f"Processing: {file_name}")
+        print(f"Processing: {file_name}", file=sys.stderr)
         with open(documents, "r", encoding="utf-8") as file:
             n_lines = sum(1 for _ in file)
-            print(f"{file_name} - {n_lines} documents")
+            print(f"{file_name} - {n_lines} documents", file=sys.stderr)
         with open(documents, "r", encoding="utf-8") as file:
             for document_file in file:
                 document = json.loads(document_file)
@@ -242,7 +242,7 @@ for json_f in os.listdir(input_path):
 
                 i += 1
                 if i % 10000 == 0:
-                    print(f"{document['document_lang']} - {i}/{n_lines}")
+                    print(f"{document['document_lang']} - {i}/{n_lines}", file=sys.stderr)
 
         df = df.sort_values(by=["language_score"], ascending=True).iloc[
             round(df.shape[0] * 0.8) :
@@ -255,4 +255,4 @@ for json_f in os.listdir(input_path):
             df.singular_chars_ratio.median(),
         ]
 df_medians.to_csv(writing_path)
-print(f"Saved results in '{writing_path}'")
+print(f"Saved results in '{writing_path}'", file=sys.stderr)
