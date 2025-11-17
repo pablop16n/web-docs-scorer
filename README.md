@@ -1,10 +1,10 @@
 # Web Docs Scorer
 
-Web Docs Scorer (WDS) is an application that analyzes monolingual documents whose text has been extracted from crawled websites and gives them a score that works as a measure of how good or bad documents are (see below). The score is on a 0 (really bad document) to 10 (very good document) scale, and it is obtained by taking into account textual indicators and metadata.
+Web Docs Scorer (WDS) is an application that analyzes monolingual documents whose text has been extracted from crawled websites and gives them a score that works as a measure of how good or bad documents are (see below). The score is on a 0 (really bad document) to 1 (very good document) scale, and it is obtained by taking into account textual indicators and metadata.
 
-Good documents (scores 5-10) are those mainly made of linguistic data, containing large portions of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, URLs or repetitions. Semantic or thematic aspects of the documents are not taken into consideration; only the structural or surface features of the text are used to make the score and subscores.
+Good documents (scores 0.5-1) are those mainly made of linguistic data, containing large portions of running text distributed across long and well constructed paragraphs. Conversely, bad documents (scores 0-0.4) are mainly made of non-linguistic characters (like code or emojis) or contain an excess of numbers, puctuation symbols, URLs or repetitions. Semantic or thematic aspects of the documents are not taken into consideration; only the structural or surface features of the text are used to make the score and subscores.
 
-WDS requires the input documents to be formatted in JSONL, containing the same fields as the documents in the HPLT 1.2 version (see an example of the format [here](https://hplt-project.org/datasets/v1.2)). The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs.
+The current implementation assumes that each document contains information about language identification (at document and segment level), and the text itself with segment boundaries (i.e. `/n`) which (roughly) correspond to paragraphs.
 
 # Table of contents
 
