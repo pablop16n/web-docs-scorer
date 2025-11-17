@@ -180,7 +180,7 @@ class DocumentScorer:
     ) -> float | List[float | str]:
         """Score a single document and return either raw (if raw_score is True) or detailed scores (if raw_score is False or by default).
         Detailed scores are ordered by the following list:
-            - [0-WDS_score, 1-language_score, 2-url_score, 3-punctuation_score, 4-singular_chars_score, 5-numbers_score, 6-repeated_score, 7-n_long_segments_score, 8-great_segment_score, 9-informativeness_score]"""
+            - [0-WDS_score, 1-language_score, 2-url_score, 3-punctuation_score, 4-singular_chars_score, 5-numbers_score, 6-repeated_score, 7-n_long_segments_score, 8-great_segment_score, 9-informativeness_score, 10-short_segments_score, 11-document_text (if text_in_output is True in configuration)]"""
         ref_lang = f"{ref_lang.lower()}_{ref_script.lower()}"
         lang_segments = [lang.lower() for lang in lang_segments]
         ref_script = ref_script.lower()
