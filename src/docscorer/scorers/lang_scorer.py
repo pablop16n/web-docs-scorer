@@ -35,12 +35,12 @@ class LangScorer:
                 wrong_lang_chars += word_chars[n]
         if correct_lang_chars == 0:
             if not available_chars:
-                print(
-                    f"Doc_name: '{id}' - No available segments have been found on "
-                    "the target language\n"
-                    f"- Language: '{ref_language}' - Segment_languages: "
-                    f"{set(lang_segments)}", file=sys.stderr
-                )
+                # print(
+                #     f"Doc_name: '{id}' - No available segments have been found on "
+                #     "the target language\n"
+                #     f"- Language: '{ref_language}' - Segment_languages: "
+                #     f"{set(lang_segments)}", file=sys.stderr
+                # )
                 return 0.0
 
             else:
