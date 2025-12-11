@@ -36,7 +36,7 @@ def scale_value(
 
 
 def penalize_accumulation(analyzed_chars: list, word_chars: list, not_penalized: 
-                          int, mid_penalized: int, hard_penalized: int) -> float:
+                          int, hard_penalized: int) -> float:
     problem_chars = 0
     for n in range(len(analyzed_chars)):
         n_word_ch = word_chars[n]
@@ -50,7 +50,5 @@ def penalize_accumulation(analyzed_chars: list, word_chars: list, not_penalized:
         return 1.0
     elif problem_chars > hard_penalized:
         return 0.0
-    elif problem_chars <= mid_penalized:
-        return scale_value(problem_chars, mid_penalized, not_penalized, 0.5, 1.0)
-    return scale_value(problem_chars, hard_penalized, mid_penalized, 0.0, 0.5)
+    return scale_value(problem_chars, not_penalized, hard_penalized, 1.0, 0.0)
         

@@ -3,9 +3,6 @@ from docscorer.scorers.utils import get_threshold, scale_value
 
 
 class PunctScorer:
-    MAX_SCORE = 1.0
-    MIN_SCORE = 0.0
-
     def __init__(self, config: ScorerConfiguration):
         self.config = config
 
@@ -35,7 +32,6 @@ class PunctScorer:
         if not num_word_chars or len(punct_chars) != len(word_chars):
             return 0.0
 
-        percent_max = get_threshold(self.config.PUNCTUATION_PERCENT_MAX, ref_language)
         percent_bad = get_threshold(self.config.PUNCTUATION_PERCENT_BAD, ref_language)
         percent_semibad = get_threshold(
             self.config.PUNCTUATION_PERCENT_SEMIBAD, ref_language
@@ -50,26 +46,23 @@ class PunctScorer:
         ratio = round((num_punctuation_chars / num_word_chars) * 100, 1)
         
         score = 0.0
-        if percent_desired_min <= ratio <= percent_desired_max:
-            score = self.MAX_SCORE
-        elif ratio >= percent_bad[0]:
-            ratio = min(ratio, percent_max)
-            score = scale_value(ratio, percent_max, percent_bad[0], self.MIN_SCORE, 0.5)
-        elif ratio >= percent_semibad[0]:
-            score = scale_value(ratio, percent_bad[0], percent_semibad[0], 0.5, 0.7)
-        elif ratio > percent_desired_max:
+        if ratio >= percent_bad[0] or ratio <= percent_bad[1]:
+            return 0.0
+        elif percent_desired_min <= ratio <= percent_desired_max:
+            score = 1.0
+        elif ratio <= percent_semibad:
+            score = scale_value(ratio, percent_bad[1], percent_semibad, 0.0, 0.5) 
+        elif ratio <= percent_desired_min:
             score = scale_value(
-                ratio, percent_semibad[0], percent_desired_max, 0.7, self.MAX_SCORE
+                ratio, percent_semibad, percent_desired_min, 0.5, 1.0
             )
-        elif ratio >= percent_semibad[1]:
+        elif ratio >= percent_desired_max:
             score = scale_value(
-                ratio, percent_semibad[1], percent_desired_min, 0.5, self.MAX_SCORE
+                ratio, percent_desired_max, percent_bad[0], 1.0, 0.0
             )
-        else:
-            score = scale_value(ratio, 0.0, percent_semibad[1], self.MIN_SCORE, 0.5)
-
         if score < 0.3:
             return score
+        
         menu_length = get_threshold(self.config.MENUS_AVERAGE_LENGTH, ref_language)
-        penalize_lack_punct_segm = self.penalize_lack_punct_segm(punct_chars=punct_chars, word_chars=word_chars, num_word_chars=num_word_chars, not_penalized=menu_length*3, percent_bad=percent_bad[1])
+        penalize_lack_punct_segm = self.penalize_lack_punct_segm(punct_chars=punct_chars, word_chars=word_chars, num_word_chars=num_word_chars, not_penalized=menu_length*3, percent_bad=percent_semibad)
         return min(score, penalize_lack_punct_segm)

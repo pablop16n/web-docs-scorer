@@ -12,9 +12,8 @@ class ScorerConfiguration:
     # Constants
     REF_LANGUAGE_KEY = "spa_latn"
     MENU_LENGTH = 30
-    PUNCT_MAX = 25.0
-    PUNCT_BAD = (13.0, 0.3)
-    PUNCT_SEMIBAD = (9.0, 0.5)
+    PUNCT_BAD = (25.0, 0.3)
+    PUNCT_SEMIBAD = 0.5
     PUNCT_DESIRED_MAX = 2.5
     PUNCT_DESIRED_MIN = 0.9
     SINGULAR_CHARS_MAX = 10.0
@@ -22,18 +21,14 @@ class ScorerConfiguration:
     SINGULAR_CHARS_SEMIBAD = 2.0
     SINGULAR_CHARS_DESIRED = 1.0
     NUMBERS_MAX = 30.0
-    NUMBERS_BAD = 15.0
-    NUMBERS_SEMIBAD = 10.0
     NUMBERS_DESIRED = 1.0
     LONG_TEXT_MIN_VALUE = 250
     LONG_TEXT_MAX_VALUE = 1000
     DESIRED_LONG_TEXTS = 10
     EQUIVALENT_SCRIPTS = {"hant": "hans"}
     ACCUM_NUMBERS_NOT_PENALIZED = 50
-    ACCUM_NUMBERS_MID_PENALIZED= 500
     ACCUM_NUMBERS_HARD_PENALIZED = 1000
     ACCUM_SINGULAR_NOT_PENALIZED = 30
-    ACCUM_SINGULAR_MID_PENALIZED= 150
     ACCUM_SINGULAR_HARD_PENALIZED = 250
 
     def __init__(self, args: Optional[Dict[str, Any]] = None):
@@ -198,14 +193,11 @@ class ScorerConfiguration:
         ref_singular = self.modeled_singular_chars[self.REF_LANGUAGE_KEY]
 
         # Punctuation scores
-        self.PUNCTUATION_PERCENT_MAX = self._compute_percent_dict(
-            self.modeled_punctuation, ref_punct, self.PUNCT_MAX, cap_100=True
-        )
         self.PUNCTUATION_PERCENT_BAD = self._compute_percent_dict_tuple(
             self.modeled_punctuation, self.PUNCT_BAD
         )
-        self.PUNCTUATION_PERCENT_SEMIBAD = self._compute_percent_dict_tuple(
-            self.modeled_punctuation, self.PUNCT_SEMIBAD
+        self.PUNCTUATION_PERCENT_SEMIBAD = self._compute_percent_dict(
+            self.modeled_punctuation, ref_punct, self.PUNCT_SEMIBAD
         )
         self.PUNCTUATION_PERCENT_DESIRED_MAX = self._compute_percent_dict(
             self.modeled_punctuation, ref_punct, self.PUNCT_DESIRED_MAX
@@ -234,12 +226,6 @@ class ScorerConfiguration:
         # Numbers scores
         self.NUMBERS_PERCENT_MAX = self._compute_percent_dict(
             self.modeled_numbers, ref_numbers, self.NUMBERS_MAX, cap_100=True
-        )
-        self.NUMBERS_PERCENT_BAD = self._compute_percent_dict(
-            self.modeled_numbers, ref_numbers, self.NUMBERS_BAD, cap_100=True
-        )
-        self.NUMBERS_PERCENT_SEMIBAD = self._compute_percent_dict(
-            self.modeled_numbers, ref_numbers, self.NUMBERS_SEMIBAD
         )
         self.NUMBERS_PERCENT_DESIRED = self._compute_percent_dict(
             self.modeled_numbers, ref_numbers, self.NUMBERS_DESIRED

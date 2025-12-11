@@ -28,7 +28,6 @@ class SingularCharsScorer:
 
         accumulation = penalize_accumulation(analyzed_chars=singular_chars, word_chars=word_chars,
                                             not_penalized=self.config.ACCUM_SINGULAR_NOT_PENALIZED,
-                                            mid_penalized=self.config.ACCUM_SINGULAR_MID_PENALIZED,
                                             hard_penalized=self.config.ACCUM_SINGULAR_HARD_PENALIZED)
 
         if ratio <= percent_desired:
