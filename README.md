@@ -245,9 +245,9 @@ $$
 
 
 $$
-e_i = \frac{\frac{P_i^{-\alpha}}{\sum_{j=1}^{n_\mathrm{P}} P_j^{-\alpha}}}{\beta}
-
+e_i = \frac{\frac{P_i^{-\alpha}}{\sum_{j=1}^{n_{\mathrm{P}}} P_j^{-\alpha}}}{\beta}
 $$
+
 
 - P: penalty subscore
 - $\alpha$: custom value (current 2.9) 
