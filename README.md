@@ -202,27 +202,26 @@ The function requires the following parameters:
 
 #### Example
 
+```
+from docscorer.configuration import ScorerConfiguration
+from docscorer.docscorer import DocumentScorer
+config = ScorerConfiguration()
+scorer = DocumentScorer(config)
 
-><font color="#569CD6">from</font> docscorer.configuration <font color="#569CD6">import</font> ScorerConfiguration  
-><font color="#569CD6">from</font> docscorer.docscorer <font color="#569CD6">import</font> DocumentScorer  
-><font color="#9CDCFE">config</font> = <font color="#9CDCFE">ScorerConfiguration</font>()  
-><font color="#9CDCFE">scorer</font> = <font color="#9CDCFE">DocumentScorer</font>(config)
->
-><font color="#9CDCFE">ref_language</font> = <font color="#CE9178">"spa"</font>  
-><font color="#9CDCFE">ref_script</font> = <font color="#CE9178">"latn"</font>  
-><font color="#9CDCFE">lang_segments</font> = [<font color="#CE9178">'spa_Latn'</font>, <font color="#CE9178">'spa_Latn'</font>, <font color="#CE9178">'spa_Latn'</font>, <font color="#CE9178">'spa_Latn'</font>]
-><font color="#9CDCFE">document_text</font> = <font color="#CE9178">"Seguramente has escuchado decir que el amor es ciego..."</font>  
-><font color="#9CDCFE">doc_id</font> = <font color="#CE9178">"0"</font>  
->
-><font color="#9CDCFE">scorer</font>.<font color="#9CDCFE">score_document</font>(  
-    ref_lang=ref_language,  
-    ref_script=ref_script,  
-    lang_segments=lang_segments,  
-    document_text=document_text,  
-    doc_id=doc_id,  
-    raw_score=<font color="#569CD6">False</font>  
+ref_language = "spa"
+ref_script = "latn"
+lang_segments = ['spa_Latn', 'spa_Latn', 'spa_Latn', 'spa_Latn'] document_text = "Seguramente has escuchado decir que el amor es ciego..."
+doc_id = "0"
+
+scorer.score_document(
+ref_lang=ref_language,
+ref_script=ref_script,
+lang_segments=lang_segments,
+document_text=document_text,
+doc_id=doc_id,
+raw_score=False
 )
-
+```
 #### src/docscorer/configuration/language_adaption/extract_ratios.py
 
 This script extracts the median ratios of numbers, punctuation and singular characters which are used to process the [language adaption](#adaptating-subscores-to-different-languages) from a sample of documents. This works as a ‘model’ for WDS. Its purpose is to create a CSV containing data from a sample of texts that are intended to be representative, diverse, and comparable. By default, the CSV we generated using data from HPLT v1.2 is located at _/src/docscorer/configurations/language_adaption/medians_language.csv_ for default use, but this script can be used to create one that better fits specific needs. The input data must consist in a jsonl file for every language with the structure of HPLT 1.2v.
@@ -246,9 +245,9 @@ $$
 
 
 $$
-e_i = \frac{\frac{P_i^{-\alpha}}{\sum_{j=1}^{n_\mathrm{P}} P_j^{-\alpha}}}{\beta}
-
+e_i = \frac{\frac{P_i^{-\alpha}}{\sum_{j=1}^{n_{\mathrm{P}}} P_j^{-\alpha}}}{\beta}
 $$
+
 
 - P: penalty subscore
 - $\alpha$: custom value (current 2.9) 
