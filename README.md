@@ -202,7 +202,7 @@ The function requires the following parameters:
 
 #### Example
 
-```
+```python
 from docscorer.configuration import ScorerConfiguration
 from docscorer.docscorer import DocumentScorer
 config = ScorerConfiguration()
@@ -210,16 +210,17 @@ scorer = DocumentScorer(config)
 
 ref_language = "spa"
 ref_script = "latn"
-lang_segments = ['spa_Latn', 'spa_Latn', 'spa_Latn', 'spa_Latn'] document_text = "Seguramente has escuchado decir que el amor es ciego..."
+lang_segments = ['spa_Latn', 'spa_Latn', 'spa_Latn', 'spa_Latn']
+document_text = "Seguramente has escuchado decir que el amor es ciego..."
 doc_id = "0"
 
 scorer.score_document(
-ref_lang=ref_language,
-ref_script=ref_script,
-lang_segments=lang_segments,
-document_text=document_text,
-doc_id=doc_id,
-raw_score=False
+    ref_lang=ref_language,
+    ref_script=ref_script,
+    lang_segments=lang_segments,
+    document_text=document_text,
+    doc_id=doc_id,
+    raw_score=False
 )
 ```
 #### src/docscorer/configuration/language_adaption/extract_ratios.py
