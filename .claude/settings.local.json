@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch",
+      "WebSearch",
+      "Skill",
+      "mcp__context7",
+      "mcp__Ref",
+      "Bash(git:*)",
+      "Bash(pip:*)",
+      "Bash(pytest:*)",
+      "Bash(python:*)",
+      "Bash(black:*)",
+      "Bash(ruff:*)",
+      "Bash(mypy:*)",
+      "Bash(pre-commit:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "bypassPermissions"
+  },
+  "outputStyle": "Explanatory"
+}
