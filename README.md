@@ -210,7 +210,7 @@ scorer = DocumentScorer(config)
 
 ref_language = "spa"
 ref_script = "latn"
-lang_segments = ['spa_Latn', 'spa_Latn', 'spa_Latn', 'spa_Latn']
+lang_segments = ['spa_latn', 'spa_latn', 'spa_latn', 'spa_latn']
 document_text = "Seguramente has escuchado decir que el amor es ciego..."
 doc_id = "0"
 
