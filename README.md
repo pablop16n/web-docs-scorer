@@ -202,7 +202,7 @@ The function requires the following parameters:
 
 #### Example
 
-```
+```python
 from docscorer.configuration import ScorerConfiguration
 from docscorer.docscorer import DocumentScorer
 config = ScorerConfiguration()
@@ -210,16 +210,17 @@ scorer = DocumentScorer(config)
 
 ref_language = "spa"
 ref_script = "latn"
-lang_segments = ['spa_Latn', 'spa_Latn', 'spa_Latn', 'spa_Latn'] document_text = "Seguramente has escuchado decir que el amor es ciego..."
+lang_segments = ['spa_latn', 'spa_latn', 'spa_latn', 'spa_latn']
+document_text = "Seguramente has escuchado decir que el amor es ciego..."
 doc_id = "0"
 
 scorer.score_document(
-ref_lang=ref_language,
-ref_script=ref_script,
-lang_segments=lang_segments,
-document_text=document_text,
-doc_id=doc_id,
-raw_score=False
+    ref_lang=ref_language,
+    ref_script=ref_script,
+    lang_segments=lang_segments,
+    document_text=document_text,
+    doc_id=doc_id,
+    raw_score=False
 )
 ```
 #### src/docscorer/configuration/language_adaption/extract_ratios.py
@@ -569,3 +570,7 @@ In case the analysed language is not present in `src/docscorer/configurations/la
 | singular character    | Non typical or not frequent linguistic punctuation, emojis, separators, etc. | 0023 — 0026, 002A — 002B, 002F, 003C — 003E, 0040, 005C, 007C, 007E, 00A2 — 00B3, 00B8 — 00BE, 00D7, 00F7, 02B0 — 0385, 0483 — 0489, 0559 — 055F, 2010 — 2E52, 10000 — 1FFFF, A670 — A67F, 3200 — 33FF                                                                                                                                  |
 | space character       | White spaces, tabulations, new lines, etc.                   | 0000 — 0020, 007F — 00A0, 2B7E, 008A, 0088                                                                                                                                                                                                                                                                          |
 | alphabetic character  | Characters that are used to create lexical units or words. This is a broad concept of characters, that includes all types of alphabets, ideograms, abjads and syllabaries. | Any character not in the other groups                                                                                                                                                                                                                                                                           |
+
+# Acknowledgements
+
+This project has received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No 101070350 and from UK Research and Innovation (UKRI) under the UK government’s Horizon Europe funding guarantee [grant number 10052546]
