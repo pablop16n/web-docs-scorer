@@ -150,14 +150,14 @@ def score_lang(
     for n in range(len(lang_segments)):
         if word_chars[n] <= 20:
             continue
-        elif lang_segments[n].split("_")[0] == ref_language:
+        elif lang_segments[n] == ref_language:
             correct_lang_chars += word_chars[n]
             correct_lang_chars_score += word_chars[n] * scores_lang[n]
         else:
             wrong_lang_chars += word_chars[n] * scores_lang[n]
     try:
         return round(
-            correct_lang_chars_score / (correct_lang_chars + wrong_lang_chars) * 10, 1
+            correct_lang_chars_score / (correct_lang_chars + wrong_lang_chars), 1
         )
     except Exception:
         return 0
@@ -205,6 +205,8 @@ for json_f in os.listdir(input_path):
         with open(documents, "r", encoding="utf-8") as file:
             for document_file in file:
                 document = json.loads(document_file)
+                if "scores" not in document:
+                    document["scores"] = [1] * len(document["seg_langs"])
                 condensed_data = [
                     (
                         len(re.findall(alpha_pattern, segment)),
@@ -220,13 +222,13 @@ for json_f in os.listdir(input_path):
                 numbers_chars = sum(x[3] for x in condensed_data)
 
                 language_score = score_lang(
-                    document["document_lang"],
-                    document["langs"],
+                    document["lang"][0],
+                    document["seg_langs"],
                     document["scores"],
                     word_chars,
                 )
                 numbers_score = score_numbers(sum(word_chars), numbers_chars)
-                punctuation_score = score_singular_chars(
+                punctuation_score = score_punctuation(
                     sum(word_chars), punctuation_chars
                 )
                 singular_chars_score = score_singular_chars(
@@ -242,13 +244,13 @@ for json_f in os.listdir(input_path):
 
                 i += 1
                 if i % 10000 == 0:
-                    print(f"{document['document_lang']} - {i}/{n_lines}", file=sys.stderr)
+                    print(f"{document['lang'][0]} - {i}/{n_lines}", file=sys.stderr)
 
         df = df.sort_values(by=["language_score"], ascending=True).iloc[
             round(df.shape[0] * 0.8) :
         ]
         df_medians.loc[df_medians.shape[0]] = [
-            document["document_lang"],
+            document["lang"][0],
             df.language_score.median(),
             df.numbers_ratio.median(),
             df.punctuation_ratio.median(),

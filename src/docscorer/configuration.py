@@ -43,6 +43,10 @@ class ScorerConfiguration:
         self.df_lang_adaption = pd.read_csv(self.benchmark_config)
         self.df_families = pd.read_csv(self.lang_families_config)
 
+        # special adaptions to special languages
+        with open(self.no_punctuation_config, "r", encoding="utf-8") as f:
+            self.no_punctuation_exception_list = json.load(f)
+
         self.LANGUAGES = self.df_lang_adaption.language_3_chars.to_list()
         self._set_character_patterns()
         self._prepare_modeled_scores()
@@ -86,7 +90,10 @@ class ScorerConfiguration:
             "configurations/char_patterns.json",
             "--char_patterns_config",
         )
-
+        self.no_punctuation_config = get_path(
+            "configurations/language_adaption/no_punctuation_exception.json",
+            "--no_punctuation_exception_list",
+        )
     def _prepare_modeled_scores(self) -> None:
         self.modeled_numbers = {
             f"{line.language_3_chars}_{line.script}": round(line.numbers_score, 2)

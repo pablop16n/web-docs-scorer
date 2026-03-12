@@ -44,6 +44,10 @@ class PunctScorer:
         )
 
         ratio = round((num_punctuation_chars / num_word_chars) * 100, 1)
+        print(ratio, percent_desired_min)
+        if ref_language in self.config.no_punctuation_exception_list and ratio <= percent_desired_min:
+            #Exception for languages with no mandatory punctuation
+            return 1.0
         
         score = 0.0
         if ratio >= percent_bad[0] or ratio <= percent_bad[1]:
